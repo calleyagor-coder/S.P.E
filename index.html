@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.P.E. - Inicio</title>
+    <link rel="icon" href="img/LogoSPE.ico">
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+    <div class="contenedor-video">
+        <video autoplay muted loop playsinline>
+            <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <main class="login-pantalla-completa">
+        <div class="tarjeta-centro">
+            
+            <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
+            <h1 class="titulo-principal">S.P.E</h1>
+            <p class="subtitulo-principal">Sistema de Préstamo de Computadoras</p>
+
+            <div id="rol-seleccionado">
+                <p class="instruccion-texto">¿QUIÉN ESTÁ INGRESANDO?</p>
+                <div class="cuadricula-roles-nueva">
+                    <button class="btn btn-estudiante" onclick="inicioSesionRol('estudiante')">Estudiante / Profesor</button>
+                    <button class="btn btn-admin" onclick="inicioSesionRol('admin')">Administrador</button>
+                </div>
+            </div>
+
+            <div id="seccion-login" class="hidden">
+                <h2 id="titulo-login" class="titulo-login-texto"></h2>
+                <input type="text" id="usuario" placeholder="Nombre de Usuario">
+                <input type="password" id="contraseña" placeholder="Contraseña">
+                <div class="btn-grupo-nuevo">
+                    <button class="btn btn-secundarios" onclick="location.reload()">Volver</button>
+                    <button class="btn btn-primarios" onclick="iniciandoSesion()">Ingresar</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        let rolSeleccionado = '';
+
+        function inicioSesionRol(role) {
+            rolSeleccionado = role;
+            document.getElementById('rol-seleccionado').classList.add('hidden');
+            document.getElementById('seccion-login').classList.remove('hidden');
+            document.getElementById('titulo-login').innerText = role === 'admin' ? "Acceso Administrador" : "Acceso Estudiante / Profesor";
+        }
+
+        function iniciandoSesion() {
+            const user = document.getElementById('usuario').value.trim();
+            const pass = document.getElementById('contraseña').value.trim();
+
+            if (user === "yagocll" && pass === "49096596") {
+                localStorage.setItem('usuario', user);
+                window.location.href = (rolSeleccionado === 'admin') ? 'panel-admin.html' : 'menu.html';
+            } else {
+                alert("Usuario o contraseña incorrectos.");
+            }
+        }
+    </script>
+</body>
+</html>

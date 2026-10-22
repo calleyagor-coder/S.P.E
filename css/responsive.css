@@ -1,0 +1,115 @@
+/* DISEÑO ADAPTATIVO PARA TABLETS Y COMPUTADORAS (PANTALLAS GRANDES) */
+@media (min-width: 768px) {
+  .caracteristicas-cuadricula {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 1.5rem;
+    width: 100%;
+  }
+  
+  .cuadricula-roles, .btn-grupo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* OPTIMIZACIONES EXTRAS PARA CELULARES (PANTALLAS CHICAS) */
+@media (max-width: 767px) {
+  .main-contenido {
+    padding: 1rem;
+  }
+
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-logo-text {
+    font-size: 1.1rem;
+  }
+
+  .nav-logo-img {
+    height: 26px;
+  }
+
+  .nav-user {
+    gap: 0.5rem;
+  }
+
+  .user-nombre {
+    font-size: 0.85rem;
+  }
+
+  .user-insignia {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .seccion-bienvenida {
+    margin: 1.5rem auto 0 auto;
+    padding: 2rem 1rem;
+    width: 100%;
+  }
+
+  .bienvenida-text h1 {
+    font-size: 1.6rem;
+  }
+
+  .bienvenida-text p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .tarjeta {
+    padding: 1.2rem;
+  }
+
+  .tarjeta h4 {
+    font-size: 1.05rem;
+  }
+
+  .tarjeta p {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .cu-contenedor {
+    padding: 1.5rem 1rem;
+    margin: 1rem auto;
+    width: 100%;
+  }
+
+  .seccion-footer {
+    margin-top: 2.5rem;
+    padding: 1.5rem 1rem;
+  }
+
+  .contenedor-footer {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1.5rem;
+  }
+
+  .contenedor-izquierda {
+    width: 100%;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 1rem;
+  }
+
+  .footer-logo-img {
+    height: 45px;
+  }
+
+  .footer-centro {
+    width: 100%;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 1rem;
+  }
+
+  .footer-derecho {
+    width: 100%;
+  }
+
+  .footer-redesSociales {
+    margin-top: 0.5rem;
+    justify-content: flex-start;
+  }
+}

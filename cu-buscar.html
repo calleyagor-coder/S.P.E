@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>S.P.E. - Buscar Computadora</title>
+    <link rel="icon" href="img/LogoSPE.ico">
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+    <div class="contenedor-video">
+        <video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video>
+    </div>
+
+    <main class="main-contenido">
+        <div class="cu-contenedor">
+            <h2>Buscar Computadora</h2>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Introduce computadoras según sus características técnicas.</p>
+            
+            <input type="text" id="compu" placeholder="Ej: Hp, Conectar Igualdad, Lenovo...">
+            <button class="btn btn-primarios" style="width:100%; margin-bottom:1rem;" onclick="buscar()">Búscar</button>
+            <a href="menu.html" class="btn btn-secundarios" style="display:block;">Volver al Menú</a>
+        </div>
+    </main>
+    <script>
+        function buscar() {
+            alert("Búsqueda simulada con éxito para "+document.getElementById('compu').value);
+        }
+    </script>
+</body>
+</html>
