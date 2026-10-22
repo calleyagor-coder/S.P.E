@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.P.E. - Pedir Computadora</title>
+    <title>S.P.E. Pedir Computadora</title>
     <link rel="icon" href="img/LogoSPE.ico">
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-
     <div class="contenedor-video">
         <video autoplay muted loop playsinline>
             <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
         </video>
     </div>
 
-
     <main class="main-contenido">
         <div class="cu-contenedor">
             <h2>Pedir Computadora</h2>
-            
-            <div id="contenedor-bloqueo" class="hidden" style="background:#fee2e2; color:#991b1b; padding:1rem; border-radius:6px; margin-bottom:1.5rem; font-weight:600;">
+            <div id="contenedor-bloqueo" class="hidden" style="background:#fee2e2; color:#991b1b; padding:1rem; border-radius: 6px; margin-bottom:1.5rem; font-weight:600;">
                 Ya tienes un equipo en uso. Debes hacer la devolución en el menú antes de pedir otro.
             </div>
-
+            
             <div id="formulario-pedido">
                 <p style="color:var(--text-muted); margin-bottom:1rem;">Selecciona una computadora libre:</p>
                 <select id="pc-seleccionada">
@@ -34,23 +31,10 @@
                 </select>
                 <button class="btn btn-primarios" style="width:100%; margin-bottom:1rem;" onclick="solicitar()">Confirmar Pedido</button>
             </div>
-
             <button onclick="window.location.href='menu.html'" class="btn btn-secundarios" style="width:100%;">Volver al Menú</button>
         </div>
     </main>
 
-    <script>
-        if (localStorage.getItem('prestamo_activo')) {
-            document.getElementById('formulario-pedido').style.display = 'none';
-            document.getElementById('contenedor-bloqueo').classList.remove('hidden');
-        }
-
-        function solicitar() {
-            let item = document.getElementById('pc-seleccionada').value;
-            localStorage.setItem('prestamo_activo', item);
-            alert("Reserva registrada para: " + item);
-            window.location.href = 'menu.html';
-        }
-    </script>
+    <script src="js/cu-pedir.js"></script>
 </body>
 </html>

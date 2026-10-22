@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.P.E. - Menú Principal</title>
+    <title>S.P.E. Menú Principal</title>
     <link rel="icon" href="img/LogoSPE.ico">
     <link rel="stylesheet" href="css/estilo.css">
     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-
     <div class="contenedor-video">
         <video autoplay muted loop playsinline>
             <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
@@ -37,19 +36,18 @@
         </div>
 
         <div class="caracteristicas-cuadricula">
-            
             <a href="cu-buscar.html" class="tarjeta tarjeta-estudiante">
                 <h4>Buscar Computadora</h4>
                 <p>Encuentra computadoras según sus características técnicas.</p>
                 <span class="btn-tarjeta" style="margin-top:auto;">Ir a Buscar</span>
             </a>
-            
+
             <a href="cu-disponibles.html" class="tarjeta tarjeta-estudiante">
                 <h4>Ver computadoras disponibles</h4>
                 <p>Consulta el stock libre dentro de la sala de informática.</p>
                 <span class="btn-tarjeta" style="margin-top:auto;">Ver Lista</span>
             </a>
-            
+
             <a href="cu-pedir.html" class="tarjeta tarjeta-estudiante">
                 <h4>Pedir Computadora</h4>
                 <p>Genera una nueva solicitud de préstamo para la computadora.</p>
@@ -58,7 +56,7 @@
 
             <div class="tarjeta tarjeta-estudiante">
                 <h4>Marcar como devuelto</h4>
-                <p>Confirma la entrega de la computadora para el inventario sea avisado.</p>
+                <p>Confirma la entrega de la computadora para que el inventario sea avisado.</p>
                 <div class="cu-box" style="margin-top:auto;">
                     <div id="info-devolucion" style="font-size:0.85rem; margin-bottom:0.75rem;"></div>
                     <button id="btn-action-devolver" class="btn-tarjeta btn-tarjeta-alert" onclick="devolverEquipo()">Efectuar Devolución</button>
@@ -71,7 +69,7 @@
                 <div class="cu-caja-perfil" style="margin-top:auto;">
                     <div class="perfil-vistaPrevia" style="display: flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
                         <img id="avatar" src="img/hermanito.jpg" style="width:40px; height:40px; border-radius: 50%;" alt="Foto">
-                        <button class="btn-sub" onclick="cambiarFoto()">📸 Cambiar Foto</button>
+                        <button class="btn-sub" onclick="cambiarFoto()">Cambiar Foto</button>
                     </div>
                     <textarea id="desc-perfil" rows="1" style="margin-bottom:0.5rem; padding:0.4rem; font-size:0.85rem;" placeholder="Escribe algo sobre ti..."></textarea>
                     <button class="btn-tarjeta" onclick="guardarPerfil()">Guardar Cambios</button>
@@ -82,10 +80,9 @@
                 <h4>Historial de Peticiones</h4>
                 <p>Vista previa del historial de solicitudes realizadas.</p>
                 <div class="contenedor-registros" id="menu-registros" style="margin-top:auto;">
-                    <p>• Sesión iniciada correctamente.</p>
+                    <p>Sesión iniciada correctamente.</p>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -100,17 +97,15 @@
                     <span class="desc-escuela">Técnico en Informática Profesional y Personal</span>
                 </div>
             </div>
-
             <div class="footer-centro">
                 <h4>Contacto</h4>
-                <p>📍 Nonogasta, La Rioja</p>
-                <p>📞 3825671774</p>
-                <p>✉️ consultas@cen.edu.ar</p>
+                <p>Nonogasta, La Rioja</p>
+                <p>3825671774</p>
+                <p>consultas@cen.edu.ar</p>
             </div>
-
             <div class="footer-derecho">
                 <h4>Síguenos</h4>
-                <div class="footer-redesSociales">
+                <div class="footer-redes-sociales">
                     <a href="https://www.instagram.com/centro_educativo_nonogasta?igsh=MTdzdTFtZ3Q5cDZoYQ==" target="_blank" class="social-btn">
                         <img src="img/logoIn.ico" alt="Instagram" class="social-icon-img">
                     </a>
@@ -122,41 +117,6 @@
         </div>
     </footer>
 
-    <script>
-        const usuarioSesion = localStorage.getItem('usuario') || 'Usuario';
-        document.getElementById('user-mostrar').innerText = usuarioSesion;
-
-        const prestamo = localStorage.getItem('prestamo_activo');
-        const infoDev = document.getElementById('info-devolucion');
-        const btnDev = document.getElementById('btn-action-devolver');
-
-        if (prestamo) {
-            infoDev.innerHTML = `<span style="color:var(--student-color)">🔴 Posees: <strong>${prestamo}</strong></span>`;
-        } else {
-            infoDev.innerHTML = `<span style="color:var(--text-muted)">🟢 No registras deudas técnicas.</span>`;
-            btnDev.disabled = true;
-            btnDev.style.opacity = "0.5";
-            btnDev.style.cursor = "not-allowed";
-        }
-
-        function devolverEquipo() {
-            localStorage.removeItem('prestamo_activo');
-            alert("El equipo fue reincorporado al stock.");
-            window.location.reload();
-        }
-
-        function cambiarFoto() {
-            alert("cambiando foto de perfil");
-        }
-
-        function guardarPerfil() {
-            alert("Perfil guardado con éxito.");
-        }
-
-        function cerrarSesion() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-    </script>
+    <script src="js/menu.js"></script>
 </body>
 </html>
