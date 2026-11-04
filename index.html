@@ -1,46 +1,51 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.P.E. Inicio</title>
-    <link rel="icon" href="img/LogoSPE.ico">
-    <link rel="stylesheet" href="css/estilo.css">
-    <link rel="stylesheet" href="css/responsive.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.E. Inicio</title>
+  <link rel="icon" href="img/LogoSPE.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div class="contenedor-video">
-        <video autoplay muted loop playsinline>
-            <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
-        </video>
-    </div>
+  <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
+  <main class="login-pantalla-completa">
+    <div class="tarjeta-centro">
+      <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
+      <h1 class="titulo-principal">S.P.E</h1>
+      <p class="subtitulo-principal">Sistema de Préstamo de Computadoras</p>
 
-    <main class="login-pantalla-completa">
-        <div class="tarjeta-centro">
-            <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
-            <h1 class="titulo-principal">S.P.E</h1>
-            <p class="subtitulo-principal">Sistema de Préstamo de Computadoras</p>
-            
-            <div id="rol-seleccionado">
-                <p class="instruccion-texto">¿QUIÉN ESTÁ INGRESANDO?</p>
-                <div class="cuadricula-roles-nueva">
-                    <button class="btn btn-estudiante" onclick="inicioSesionRol('estudiante')">Estudiante / Profesor</button>
-                    <button class="btn btn-admin" onclick="inicioSesionRol('admin')">Administrador</button>
-                </div>
-            </div>
-
-            <div id="seccion-login" class="hidden">
-                <h2 id="titulo-login" class="titulo-login-texto"></h2>
-                <input type="text" id="usuario" placeholder="Nombre de Usuario">
-                <input type="password" id="contraseña" placeholder="Contraseña">
-                <div class="btn-grupo-nuevo">
-                    <button class="btn btn-secundarios" onclick="location.reload()">Volver</button>
-                    <button class="btn btn-primarios" onclick="iniciandoSesion()">Ingresar</button>
-                </div>
-            </div>
+      <div id="rol-seleccionado">
+        <p class="instruccion-texto">¿Quién está ingresando?</p>
+        <div class="cuadricula-roles-nueva">
+          <button class="btn btn-estudiante btn-rol" onclick="inicioSesionRol('estudiante')">
+            <span class="ico">🎓</span><span>Estudiante / Profesor<small>Pide y devuelve computadoras</small></span>
+          </button>
+          <button class="btn btn-admin btn-rol" onclick="inicioSesionRol('admin')">
+            <span class="ico">🛡️</span><span>Administrador<small>Gestiona alumnos y equipos</small></span>
+          </button>
         </div>
-    </main>
+      </div>
 
-    <script src="js/index.js"></script>
+      <div id="seccion-login" class="hidden">
+        <h2 id="titulo-login" class="titulo-login-texto"></h2>
+        <div class="campo"><input type="text" id="usuario" placeholder="Usuario" autocomplete="username"></div>
+        <div class="campo">
+          <input type="password" id="contraseña" placeholder="Contraseña" autocomplete="current-password">
+          <button type="button" class="ver" onclick="verClave()" aria-label="Mostrar u ocultar contraseña">👁</button>
+        </div>
+        <p id="error-login" class="error-login" role="alert"></p>
+        <div class="btn-grupo-nuevo">
+          <button class="btn btn-secundarios" onclick="location.reload()">Volver</button>
+          <button class="btn btn-primarios" onclick="iniciandoSesion()">Ingresar</button>
+        </div>
+        <p class="pista">Estudiantes y profesores: ingresa con tu DNI como usuario y contraseña.</p>
+      </div>
+    </div>
+  </main>
+  <script src="js/datos.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>

@@ -1,40 +1,32 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.P.E. Pedir Computadora</title>
-    <link rel="icon" href="img/LogoSPE.ico">
-    <link rel="stylesheet" href="css/estilo.css">
-    <link rel="stylesheet" href="css/responsive.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.E. Pedir Computadora</title>
+  <link rel="icon" href="img/LogoSPE.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div class="contenedor-video">
-        <video autoplay muted loop playsinline>
-            <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
-        </video>
+  <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
+  <main class="main-contenido">
+    <div class="cu-contenedor">
+      <h2>Pedir computadora</h2>
+      <div id="contenedor-bloqueo" class="hidden" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:#fca5a5;padding:1rem;border-radius:12px;margin:1rem 0 1.5rem;font-weight:600;">
+        Ya tienes un equipo en uso. Devuélvelo desde el menú antes de pedir otro.
+      </div>
+      <div id="formulario-pedido">
+        <p class="texto-suave">Selecciona una computadora libre:</p>
+        <select id="pc-seleccionada" onchange="detalle()"></select>
+        <div id="detalle-pc" class="texto-suave" style="margin-top:-.6rem;font-size:.88rem;"></div>
+        <button class="btn btn-primarios w-100" style="margin-bottom:1rem;" onclick="solicitar()">Confirmar pedido</button>
+      </div>
+      <button onclick="location.href='menu.html'" class="btn btn-secundarios w-100">Volver al menú</button>
     </div>
-
-    <main class="main-contenido">
-        <div class="cu-contenedor">
-            <h2>Pedir Computadora</h2>
-            <div id="contenedor-bloqueo" class="hidden" style="background:#fee2e2; color:#991b1b; padding:1rem; border-radius: 6px; margin-bottom:1.5rem; font-weight:600;">
-                Ya tienes un equipo en uso. Debes hacer la devolución en el menú antes de pedir otro.
-            </div>
-            
-            <div id="formulario-pedido">
-                <p style="color:var(--text-muted); margin-bottom:1rem;">Selecciona una computadora libre:</p>
-                <select id="pc-seleccionada">
-                    <option value="Hp 01">Hp 01</option>
-                    <option value="Lenovo 06">Lenovo 06</option>
-                    <option value="Juana Manso 18">Juana Manso 18</option>
-                </select>
-                <button class="btn btn-primarios" style="width:100%; margin-bottom:1rem;" onclick="solicitar()">Confirmar Pedido</button>
-            </div>
-            <button onclick="window.location.href='menu.html'" class="btn btn-secundarios" style="width:100%;">Volver al Menú</button>
-        </div>
-    </main>
-
-    <script src="js/cu-pedir.js"></script>
+  </main>
+  <script src="js/datos.js"></script>
+  <script src="js/cu-pedir.js"></script>
 </body>
 </html>

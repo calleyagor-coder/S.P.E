@@ -1,29 +1,26 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>S.P.E. Buscar Computadora</title>
-    <link rel="icon" href="img/LogoSPE.ico">
-    <link rel="stylesheet" href="css/estilo.css">
-    <link rel="stylesheet" href="css/responsive.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.E. Buscar Computadora</title>
+  <link rel="icon" href="img/LogoSPE.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div class="contenedor-video">
-        <video autoplay muted loop playsinline>
-            <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
-        </video>
+  <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
+  <main class="main-contenido">
+    <div class="cu-contenedor" style="max-width:900px;">
+      <h2>Buscar computadora</h2>
+      <p class="texto-suave">Filtra por marca, modelo, memoria, almacenamiento o estado.</p>
+      <input type="search" id="compu" placeholder="Ej: Hp, Conectar Igualdad, Lenovo, 8 GB, SSD..." oninput="buscar()">
+      <div id="resultados" class="cuadricula-pcs" style="margin-top:0"></div>
+      <a href="menu.html" class="btn btn-secundarios" style="display:block;">Volver al menú</a>
     </div>
-
-    <main class="main-contenido">
-        <div class="cu-contenedor">
-            <h2>Buscar Computadora</h2>
-            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Introduce computadoras según sus características técnicas.</p>
-            <input type="text" id="compu" placeholder="Ej: Hp, Conectar Igualdad, Lenovo...">
-            <button class="btn btn-primarios" style="width:100%; margin-bottom:1rem;" onclick="buscar()">Buscar</button>
-            <a href="menu.html" class="btn btn-secundarios" style="display:block;">Volver al Menú</a>
-        </div>
-    </main>
-
-    <script src="js/cu-buscar.js"></script>
+  </main>
+  <script src="js/datos.js"></script>
+  <script src="js/cu-buscar.js"></script>
 </body>
 </html>

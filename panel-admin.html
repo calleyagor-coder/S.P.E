@@ -1,29 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>S.P.E. - Menú Administrativo</title>
-    <link rel="icon" href="Img/LogoSPE.ico">
-    <link rel="stylesheet" href="css/estilo.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.E. - Panel de administración</title>
+  <link rel="icon" href="img/LogoSPE.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
-    <header class="navbar">
-        <div class="nav-container">
-            <span class="nav-logo">💻 S.P.E.</span>  
-            <button class="btn-CerrarSesion" onclick="localStorage.clear(); window.location.href='index.html'">Cerrar Sesión</button>
-        </div>
-    </header>
+  <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
+  <header class="navbar">
+    <div class="nav-contenedor">
+      <div class="nav-izq">
+        <img src="img/LogoSPE.ico" alt="Logo SPE" class="nav-logo-img"><span class="nav-logo-text">S.P.E</span>
+      </div>
+      <div class="nav-user">
+        <span class="user-insignia insignia-admin">Administrador</span>
+        <button class="btn-CerrarSesion" onclick="SPE.cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
 
-    <main class="main-content">
-        <div class="seccion-titulo">
-            <h2>Consola de Administración</h2>
+  <main class="main-contenido">
+    <div class="seccion-titulo">
+      <h2>Consola de administración</h2>
+      <p>Gestiona alumnos, préstamos y el estado de las computadoras.</p>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab activo" data-tab="resumen">Resumen</button>
+      <button class="tab" data-tab="alumnos">Alumnos</button>
+      <button class="tab" data-tab="prestamos">Préstamos</button>
+      <button class="tab" data-tab="equipos">Computadoras</button>
+    </nav>
+
+    <!-- RESUMEN -->
+    <section id="tab-resumen">
+      <div class="stats" id="stats"></div>
+      <div class="panel-bloque">
+        <h3>Actividad reciente</h3>
+        <div class="contenedor-registros alto" id="actividad"></div>
+      </div>
+    </section>
+
+    <!-- ALUMNOS -->
+    <section id="tab-alumnos" class="hidden">
+      <div class="panel-bloque">
+        <h3>Registrar nuevo alumno</h3>
+        <div class="form-grid">
+          <div><label for="a-nombre">Nombre</label><input type="text" id="a-nombre" maxlength="40" placeholder="Nombre"></div>
+          <div><label for="a-apellido">Apellido</label><input type="text" id="a-apellido" maxlength="40" placeholder="Apellido"></div>
+          <div><label for="a-dni">DNI</label><input type="text" id="a-dni" inputmode="numeric" maxlength="8" placeholder="Sin puntos"></div>
+          <div><label for="a-tel">Número de teléfono</label><input type="tel" id="a-tel" inputmode="tel" maxlength="15" placeholder="3825123456"></div>
+          <div><label for="a-anio">Año</label>
+            <select id="a-anio"><option>1°</option><option>2°</option><option>3°</option><option>4°</option><option>5°</option><option>6°</option><option>Profesor</option></select></div>
+          <div><label for="a-div">División</label>
+            <select id="a-div"><option>A</option><option>B</option><option>C</option><option>D</option><option>—</option></select></div>
+          <div><label for="a-estado">Estado</label>
+            <select id="a-estado"><option>Activo</option><option>Inactivo</option><option>Suspendido</option></select></div>
         </div>
-        <div class="cu-contenedor" style="max-width:1000px;">
-            <div class="contenedor-registros" style="height:300px;">
-                <p style="color:#a7f3d0">• Servidor en funcionamiento. Monitoreando cambios...</p>
-            </div>
+        <button class="btn btn-primarios" onclick="registrarAlumno()">Registrar alumno</button>
+      </div>
+
+      <div class="panel-bloque">
+        <div class="barra-herramientas">
+          <h3 style="margin:0">Alumnos registrados <span id="cant-alumnos" class="chip chip-info"></span></h3>
+          <input type="search" id="buscar-alumno" placeholder="Buscar por nombre, DNI o curso..." oninput="renderAlumnos()">
         </div>
-    </main>
+        <div class="tabla-wrap"><table>
+          <thead><tr><th>Alumno</th><th>DNI</th><th>Teléfono</th><th>Curso</th><th>Estado</th><th>Equipo</th><th></th></tr></thead>
+          <tbody id="tabla-alumnos"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- PRÉSTAMOS -->
+    <section id="tab-prestamos" class="hidden">
+      <div class="panel-bloque">
+        <h3>Computadoras en préstamo</h3>
+        <div class="tabla-wrap"><table>
+          <thead><tr><th>Computadora</th><th>Modelo</th><th>Dueño del préstamo</th><th>Curso</th><th>Teléfono</th><th>Desde</th><th></th></tr></thead>
+          <tbody id="tabla-prestamos"></tbody>
+        </table></div>
+      </div>
+      <div class="panel-bloque">
+        <h3>Últimas devoluciones</h3>
+        <div class="tabla-wrap"><table>
+          <thead><tr><th>Computadora</th><th>Alumno</th><th>Retiro</th><th>Devolución</th></tr></thead>
+          <tbody id="tabla-historial"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- EQUIPOS -->
+    <section id="tab-equipos" class="hidden">
+      <div class="panel-bloque">
+        <h3>Agregar computadora</h3>
+        <div class="form-grid">
+          <div><label for="e-nombre">Nombre / etiqueta</label><input type="text" id="e-nombre" maxlength="30" placeholder="Ej: Hp 03"></div>
+          <div><label for="e-marca">Marca</label><input type="text" id="e-marca" maxlength="30" placeholder="HP"></div>
+          <div><label for="e-modelo">Modelo</label><input type="text" id="e-modelo" maxlength="40" placeholder="ProBook 450"></div>
+          <div><label for="e-ram">Memoria RAM</label><input type="text" id="e-ram" maxlength="10" placeholder="8 GB"></div>
+          <div><label for="e-alm">Almacenamiento</label><input type="text" id="e-alm" maxlength="20" placeholder="256 GB SSD"></div>
+        </div>
+        <button class="btn btn-primarios" onclick="agregarPc()">Agregar computadora</button>
+      </div>
+      <div class="panel-bloque">
+        <h3>Estado de las computadoras</h3>
+        <div class="tabla-wrap"><table>
+          <thead><tr><th>Computadora</th><th>Marca y modelo</th><th>Especificaciones</th><th>Estado</th><th>En poder de</th><th></th></tr></thead>
+          <tbody id="tabla-equipos"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+  <script src="js/datos.js"></script>
+  <script src="js/panel-admin.js"></script>
 </body>
 </html>

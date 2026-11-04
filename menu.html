@@ -1,122 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S.P.E. Menú Principal</title>
-    <link rel="icon" href="img/LogoSPE.ico">
-    <link rel="stylesheet" href="css/estilo.css">
-    <link rel="stylesheet" href="css/responsive.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.P.E. Menú Principal</title>
+  <link rel="icon" href="img/LogoSPE.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilo.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-    <div class="contenedor-video">
-        <video autoplay muted loop playsinline>
-            <source src="media/FondoPaginaWeb.mp4" type="video/mp4">
-        </video>
+  <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
+  <header class="navbar">
+    <div class="nav-contenedor">
+      <div class="nav-izq">
+        <a href="menu.html" class="nav-logo-container"><img src="img/LogoSPE.ico" alt="Logo SPE" class="nav-logo-img"></a>
+        <span class="nav-logo-text">S.P.E</span>
+      </div>
+      <div class="nav-user">
+        <span class="user-insignia insignia-estudiante">Estudiante/Profesor</span>
+        <span id="user-mostrar" class="user-nombre"></span>
+        <button class="btn-CerrarSesion" onclick="SPE.cerrarSesion()">Salir</button>
+      </div>
     </div>
+  </header>
 
-    <header class="navbar">
-        <div class="nav-contenedor">
-            <a href="menu.html" class="nav-logo-container">
-                <img src="img/LogoSPE.ico" alt="Logo SPE" class="nav-logo-img">
-            </a>
-            <span class="nav-logo-text">S.P.E</span>
-            <div class="nav-user">
-                <span class="user-insignia insignia-estudiante">Estudiante/Profesor</span>
-                <span id="user-mostrar" class="user-nombre"></span>
-                <button class="btn-CerrarSesion" onclick="cerrarSesion()">Salir</button>
-            </div>
+  <main class="main-contenido">
+    <div class="seccion-titulo">
+      <h2 id="saludo">Menú principal</h2>
+      <p>Pide, consulta y devuelve computadoras desde un solo lugar.</p>
+    </div>
+    <div class="caracteristicas-cuadricula">
+      <a href="cu-buscar.html" class="tarjeta tarjeta-estudiante">
+        <h4>Buscar computadora</h4>
+        <p>Encuentra computadoras por marca, modelo o características técnicas.</p>
+        <span class="btn-tarjeta" style="margin-top:auto;">Ir a buscar</span>
+      </a>
+      <a href="cu-disponibles.html" class="tarjeta tarjeta-estudiante">
+        <h4>Ver computadoras disponibles</h4>
+        <p>Consulta el stock libre dentro de la sala de informática.</p>
+        <span class="btn-tarjeta" style="margin-top:auto;">Ver lista</span>
+      </a>
+      <a href="cu-pedir.html" class="tarjeta tarjeta-estudiante">
+        <h4>Pedir computadora</h4>
+        <p>Genera una nueva solicitud de préstamo.</p>
+        <span class="btn-tarjeta" style="margin-top:auto;">Solicitar</span>
+      </a>
+
+      <div class="tarjeta tarjeta-estudiante">
+        <h4>Marcar como devuelto</h4>
+        <p>Confirma la entrega de la computadora para que el inventario sea avisado.</p>
+        <div class="cu-box">
+          <div id="info-devolucion" style="font-size:.88rem;margin-bottom:.75rem;"></div>
+          <button id="btn-action-devolver" class="btn-tarjeta btn-tarjeta-alert" onclick="devolverEquipo()">Efectuar devolución</button>
         </div>
-    </header>
+      </div>
 
-    <main class="main-contenido">
-        <div class="seccion-titulo">
-            <h2>Menú Principal</h2>
-            <p>Panel de control.</p>
+      <div class="tarjeta tarjeta-estudiante">
+        <h4>Editar perfil</h4>
+        <p>Actualiza tu avatar y tu descripción dentro de S.P.E.</p>
+        <div class="cu-caja-perfil">
+          <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem;">
+            <img id="avatar" class="avatar" src="img/hermanito.jpg" alt="Foto de perfil">
+            <button class="btn-sub" onclick="cambiarFoto()">Cambiar foto</button>
+            <input type="file" id="archivo-foto" accept="image/*" class="hidden">
+          </div>
+          <textarea id="desc-perfil" rows="2" style="margin-bottom:.7rem;" placeholder="Escribe algo sobre ti..."></textarea>
+          <button class="btn-tarjeta" onclick="guardarPerfil()">Guardar cambios</button>
         </div>
+      </div>
 
-        <div class="caracteristicas-cuadricula">
-            <a href="cu-buscar.html" class="tarjeta tarjeta-estudiante">
-                <h4>Buscar Computadora</h4>
-                <p>Encuentra computadoras según sus características técnicas.</p>
-                <span class="btn-tarjeta" style="margin-top:auto;">Ir a Buscar</span>
-            </a>
+      <div class="tarjeta tarjeta-estudiante">
+        <h4>Historial de peticiones</h4>
+        <p>Tus últimas solicitudes de préstamo.</p>
+        <div class="contenedor-registros" id="menu-registros" style="margin-top:auto;"></div>
+      </div>
+    </div>
+  </main>
 
-            <a href="cu-disponibles.html" class="tarjeta tarjeta-estudiante">
-                <h4>Ver computadoras disponibles</h4>
-                <p>Consulta el stock libre dentro de la sala de informática.</p>
-                <span class="btn-tarjeta" style="margin-top:auto;">Ver Lista</span>
-            </a>
-
-            <a href="cu-pedir.html" class="tarjeta tarjeta-estudiante">
-                <h4>Pedir Computadora</h4>
-                <p>Genera una nueva solicitud de préstamo para la computadora.</p>
-                <span class="btn-tarjeta" style="margin-top:auto;">Solicitar</span>
-            </a>
-
-            <div class="tarjeta tarjeta-estudiante">
-                <h4>Marcar como devuelto</h4>
-                <p>Confirma la entrega de la computadora para que el inventario sea avisado.</p>
-                <div class="cu-box" style="margin-top:auto;">
-                    <div id="info-devolucion" style="font-size:0.85rem; margin-bottom:0.75rem;"></div>
-                    <button id="btn-action-devolver" class="btn-tarjeta btn-tarjeta-alert" onclick="devolverEquipo()">Efectuar Devolución</button>
-                </div>
-            </div>
-
-            <div class="tarjeta tarjeta-estudiante">
-                <h4>Editar Perfil</h4>
-                <p>Actualiza tu avatar y tu descripción dentro de S.P.E.</p>
-                <div class="cu-caja-perfil" style="margin-top:auto;">
-                    <div class="perfil-vistaPrevia" style="display: flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                        <img id="avatar" src="img/hermanito.jpg" style="width:40px; height:40px; border-radius: 50%;" alt="Foto">
-                        <button class="btn-sub" onclick="cambiarFoto()">Cambiar Foto</button>
-                    </div>
-                    <textarea id="desc-perfil" rows="1" style="margin-bottom:0.5rem; padding:0.4rem; font-size:0.85rem;" placeholder="Escribe algo sobre ti..."></textarea>
-                    <button class="btn-tarjeta" onclick="guardarPerfil()">Guardar Cambios</button>
-                </div>
-            </div>
-
-            <div class="tarjeta tarjeta-estudiante">
-                <h4>Historial de Peticiones</h4>
-                <p>Vista previa del historial de solicitudes realizadas.</p>
-                <div class="contenedor-registros" id="menu-registros" style="margin-top:auto;">
-                    <p>Sesión iniciada correctamente.</p>
-                </div>
-            </div>
+  <footer class="seccion-footer">
+    <div class="contenedor-footer">
+      <div class="contenedor-izquierda">
+        <a href="https://cen.edu.ar/" target="_blank" class="footer-escuela-link"><img src="img/logoCen.ico" alt="Logo Escuela" class="footer-logo-img"></a>
+        <div class="footer-creditos">
+          <span class="escuela-nombre">Centro Educativo Nonogasta</span>
+          <span class="desc-escuela">Técnico en Informática Profesional y Personal</span>
         </div>
-    </main>
-
-    <footer class="seccion-footer">
-        <div class="contenedor-footer">
-            <div class="contenedor-izquierda">
-                <a href="https://cen.edu.ar/" target="_blank" class="footer-escuela-link">
-                    <img src="img/logoCen.ico" alt="Logo Escuela" class="footer-logo-img">
-                </a>
-                <div class="footer-creditos">
-                    <span class="escuela-nombre">Centro Educativo Nonogasta</span>
-                    <span class="desc-escuela">Técnico en Informática Profesional y Personal</span>
-                </div>
-            </div>
-            <div class="footer-centro">
-                <h4>Contacto</h4>
-                <p>Nonogasta, La Rioja</p>
-                <p>3825671774</p>
-                <p>consultas@cen.edu.ar</p>
-            </div>
-            <div class="footer-derecho">
-                <h4>Síguenos</h4>
-                <div class="footer-redes-sociales">
-                    <a href="https://www.instagram.com/centro_educativo_nonogasta?igsh=MTdzdTFtZ3Q5cDZoYQ==" target="_blank" class="social-btn">
-                        <img src="img/logoIn.ico" alt="Instagram" class="social-icon-img">
-                    </a>
-                    <a href="https://www.facebook.com/share/18eY2tpDfk/" target="_blank" class="social-btn">
-                        <img src="img/logoFace.ico" alt="Facebook" class="social-icon-img">
-                    </a>
-                </div>
-            </div>
+      </div>
+      <div class="footer-centro">
+        <h4>Contacto</h4>
+        <p>Nonogasta, La Rioja</p><p>3825671774</p><p>consultas@cen.edu.ar</p>
+      </div>
+      <div class="footer-derecho">
+        <h4>Síguenos</h4>
+        <div class="footer-redes-sociales">
+          <a href="https://www.instagram.com/centro_educativo_nonogasta?igsh=MTdzdTFtZ3Q5cDZoYQ==" target="_blank" class="social-btn"><img src="img/logoIn.ico" alt="Instagram" class="social-icon-img"></a>
+          <a href="https://www.facebook.com/share/18eY2tpDfk/" target="_blank" class="social-btn"><img src="img/logoFace.ico" alt="Facebook" class="social-icon-img"></a>
         </div>
-    </footer>
-
-    <script src="js/menu.js"></script>
+      </div>
+    </div>
+  </footer>
+  <script src="js/datos.js"></script>
+  <script src="js/menu.js"></script>
 </body>
 </html>
