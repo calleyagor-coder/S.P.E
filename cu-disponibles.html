@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S.P.E. - Computadoras Disponibles</title>
+  <title>S.P.E. - Computadoras disponibles</title>
   <link rel="icon" href="img/LogoSPE.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/estilo.css">
@@ -16,8 +16,15 @@
       <h2>Computadoras disponibles</h2>
       <p id="resumen"></p>
     </div>
-    <div id="lista-pcs" class="cuadricula-pcs"></div>
-    <a href="menu.html" class="btn btn-secundarios">Volver al menú</a>
+
+    <div id="aviso-uso" class="aviso hidden"></div>
+
+    <div class="panel-bloque">
+      <input type="search" id="compu" placeholder="Buscar por nombre, marca, modelo, memoria o almacenamiento..." oninput="render()">
+      <div class="filtros" id="filtros"></div>
+      <div id="lista-pcs" class="cuadricula-pcs"></div>
+    </div>
+    <a href="menu.html" class="btn btn-secundarios">← Volver al menú</a>
   </main>
   <script src="js/datos.js"></script>
   <script src="js/cu-disponibles.js"></script>

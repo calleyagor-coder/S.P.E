@@ -13,10 +13,19 @@ const SPE = (() => {
     { id:'HP-02',  nombre:'Hp 02',              marca:'HP',            modelo:'250 G7',           ram:'4 GB',  almacenamiento:'500 GB HDD', estado:'En reparación' }
   ]);
   if (!localStorage.getItem(K.alumnos)) set(K.alumnos, [
-    { dni:'49096596', nombre:'Yago',   apellido:'Cll',       telefono:'3825671774', anio:'6°', division:'A', estado:'Activo', foto:'', desc:'' },
-    { dni:'45123456', nombre:'Lucía',  apellido:'Fernández', telefono:'3825400111', anio:'5°', division:'B', estado:'Activo', foto:'', desc:'' },
-    { dni:'46234567', nombre:'Mateo',  apellido:'Ramírez',   telefono:'3825400222', anio:'4°', division:'A', estado:'Activo', foto:'', desc:'' }
+    { dni:'49096596', nombre:'Yago',   apellido:'Cll',       email:'yago@ejemplo.com',   telefono:'3825671774', anio:'6°', division:'1° Div', estado:'Activo', foto:'', desc:'' },
+    { dni:'45123456', nombre:'Lucía',  apellido:'Fernández', email:'lucia@ejemplo.com',  telefono:'3825400111', anio:'5°', division:'2° Div', estado:'Activo', foto:'', desc:'' },
+    { dni:'46234567', nombre:'Mateo',  apellido:'Ramírez',   email:'mateo@ejemplo.com',  telefono:'3825400222', anio:'4°', division:'1° Div', estado:'Activo', foto:'', desc:'' }
   ]);
+  /* Migración de datos guardados con la versión anterior: se agrega el correo y las divisiones A/B pasan a 1° Div / 2° Div */
+  (() => {
+    const l = get(K.alumnos, []), m = { A:'1° Div', B:'2° Div' }; let c = false;
+    l.forEach(a => {
+      if (a.email === undefined) { a.email = ''; c = true; }
+      if (m[a.division]) { a.division = m[a.division]; c = true; }
+    });
+    if (c) set(K.alumnos, l);
+  })();
   if (!localStorage.getItem(K.prestamos)) set(K.prestamos, [
     { id:'P-1', pcId:'CI-08', dni:'46234567', fecha:new Date().toISOString(), devuelto:null }
   ]);
@@ -42,6 +51,7 @@ const SPE = (() => {
   const guardarAlumnos = v => set(K.alumnos, v);
   const alumno = dni => alumnos().find(a => a.dni === dni);
   const nombreCompleto = a => a ? `${a.nombre} ${a.apellido}` : 'Desconocido';
+  const curso = a => !a ? '—' : (a.anio === 'Profesor' ? 'Profesor' : `${a.anio} año · ${a.division}`);
   const pcs = () => get(K.pcs, []);
   const guardarPcs = v => set(K.pcs, v);
   const pc = id => pcs().find(p => p.id === id);
@@ -83,11 +93,11 @@ const SPE = (() => {
     const t = document.createElement('div'); t.className = 'toast ' + tipo; t.textContent = msg; c.appendChild(t);
     setTimeout(() => { t.classList.add('saliendo'); setTimeout(() => t.remove(), 300); }, 3200);
   }
-  function confirmar(titulo, texto, textoBoton = 'Confirmar') {
+  function confirmar(titulo, texto, textoBoton = 'Confirmar', peligro = true) {
     return new Promise(res => {
       const f = document.createElement('div'); f.className = 'modal-fondo';
       f.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><h3>${esc(titulo)}</h3><p>${esc(texto)}</p>
-        <div class="fila"><button class="btn btn-secundarios btn-chico" data-r="0">Cancelar</button><button class="btn btn-peligro btn-chico" data-r="1">${esc(textoBoton)}</button></div></div>`;
+        <div class="fila"><button class="btn btn-secundarios btn-chico" data-r="0">Cancelar</button><button class="btn ${peligro ? 'btn-peligro' : 'btn-primarios'} btn-chico" data-r="1">${esc(textoBoton)}</button></div></div>`;
       f.addEventListener('click', e => { const r = e.target.dataset.r; if (r !== undefined || e.target === f) { f.remove(); res(r === '1'); } });
       document.body.appendChild(f); f.querySelector('[data-r="0"]').focus();
     });
@@ -99,6 +109,6 @@ const SPE = (() => {
     const r = t.getBoundingClientRect(); t.style.setProperty('--mx', (e.clientX - r.left) + 'px'); t.style.setProperty('--my', (e.clientY - r.top) + 'px');
   });
 
-  return { sesion, setSesion, cerrarSesion, requerir, alumnos, guardarAlumnos, alumno, nombreCompleto, pcs, guardarPcs, pc,
+  return { sesion, setSesion, cerrarSesion, requerir, alumnos, guardarAlumnos, alumno, nombreCompleto, curso, pcs, guardarPcs, pc,
            prestamos, guardarPrestamos, activos, prestamoDe, pedir, devolver, log, logs, toast, confirmar, esc, fmtFecha, chip };
 })();

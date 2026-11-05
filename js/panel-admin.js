@@ -25,30 +25,35 @@ function renderResumen() {
 /* ---------- Alumnos ---------- */
 function registrarAlumno() {
   const nombre = $('a-nombre').value.trim(), apellido = $('a-apellido').value.trim(),
-        dni = $('a-dni').value.trim(), tel = $('a-tel').value.trim();
+        dni = $('a-dni').value.trim(), tel = $('a-tel').value.trim(), email = $('a-email').value.trim().toLowerCase();
   const soloLetras = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{2,40}$/;
   if (!soloLetras.test(nombre)) return SPE.toast('Escribe un nombre válido (solo letras).', 'error');
   if (!soloLetras.test(apellido)) return SPE.toast('Escribe un apellido válido (solo letras).', 'error');
   if (!/^\d{7,8}$/.test(dni)) return SPE.toast('El DNI debe tener 7 u 8 números.', 'error');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return SPE.toast('Escribe un correo electrónico válido.', 'error');
   if (!/^\d{6,15}$/.test(tel)) return SPE.toast('El teléfono debe tener entre 6 y 15 números.', 'error');
   const todos = SPE.alumnos();
   if (todos.some(a => a.dni === dni)) return SPE.toast('Ya existe un alumno con ese DNI.', 'error');
-  todos.push({ dni, nombre, apellido, telefono:tel, anio:$('a-anio').value, division:$('a-div').value, estado:$('a-estado').value, foto:'', desc:'' });
+  if (todos.some(a => (a.email || '').toLowerCase() === email)) return SPE.toast('Ya existe un alumno con ese correo.', 'error');
+  const esProf = $('a-anio').value === 'Profesor';
+  todos.push({ dni, nombre, apellido, email, telefono:tel, anio:$('a-anio').value, division:esProf ? '—' : $('a-div').value, estado:$('a-estado').value, foto:'', desc:'' });
   SPE.guardarAlumnos(todos); SPE.log(`Alumno registrado: ${nombre} ${apellido} (DNI ${dni})`);
-  ['a-nombre','a-apellido','a-dni','a-tel'].forEach(i => $(i).value = '');
+  ['a-nombre','a-apellido','a-dni','a-email','a-tel'].forEach(i => $(i).value = '');
   SPE.toast(`${nombre} ${apellido} fue registrado.`, 'ok'); renderTodo();
 }
+/* Los profesores no pertenecen a una división */
+function ajustarDivision() { const p = $('a-anio').value === 'Profesor'; $('a-div').disabled = p; $('a-div').style.opacity = p ? '.45' : ''; }
 function renderAlumnos() {
   const q = $('buscar-alumno').value.trim().toLowerCase(), todos = SPE.alumnos();
-  const lista = todos.filter(a => [a.nombre, a.apellido, a.dni, a.anio + a.division, a.estado].join(' ').toLowerCase().includes(q));
+  const lista = todos.filter(a => [a.nombre, a.apellido, a.dni, a.email, a.anio, a.division, a.estado].join(' ').toLowerCase().includes(q));
   $('cant-alumnos').textContent = todos.length;
   $('tabla-alumnos').innerHTML = lista.length ? lista.map(a => {
     const pr = SPE.prestamoDe(a.dni), p = pr && SPE.pc(pr.pcId);
-    return `<tr><td><b>${esc(a.nombre)} ${esc(a.apellido)}</b></td><td>${esc(a.dni)}</td><td>${esc(a.telefono)}</td>
-      <td>${esc(a.anio)} ${esc(a.division)}</td><td>${SPE.chip(a.estado)}</td>
+    return `<tr><td><b>${esc(a.nombre)} ${esc(a.apellido)}</b></td><td>${esc(a.dni)}</td><td>${a.email ? esc(a.email) : '<small>—</small>'}</td><td>${esc(a.telefono)}</td>
+      <td>${esc(SPE.curso(a))}</td><td>${SPE.chip(a.estado)}</td>
       <td>${pr ? `<span class="chip chip-info">${esc(p ? p.nombre : pr.pcId)}</span>` : '<small>Ninguno</small>'}</td>
       <td><div class="acciones"><button class="btn btn-peligro btn-chico" onclick="eliminarAlumno('${esc(a.dni)}')">Eliminar</button></div></td></tr>`;
-  }).join('') : vacio(7, 'No hay alumnos que coincidan. Registra uno con el formulario de arriba.');
+  }).join('') : vacio(8, 'No hay alumnos que coincidan. Registra uno con el formulario de arriba.');
 }
 async function eliminarAlumno(dni) {
   const a = SPE.alumno(dni); if (!a) return;
@@ -70,7 +75,7 @@ function renderPrestamos() {
     const p = SPE.pc(pr.pcId), a = SPE.alumno(pr.dni);
     return `<tr><td><b>${esc(p ? p.nombre : pr.pcId)}</b></td><td>${p ? esc(p.marca) + ' ' + esc(p.modelo) : '—'}</td>
       <td>${a ? `<b>${esc(a.nombre)} ${esc(a.apellido)}</b><small>DNI ${esc(a.dni)}</small>` : 'Alumno eliminado'}</td>
-      <td>${a ? esc(a.anio) + ' ' + esc(a.division) : '—'}</td><td>${a ? esc(a.telefono) : '—'}</td><td>${SPE.fmtFecha(pr.fecha)}</td>
+      <td>${a ? esc(SPE.curso(a)) : '—'}</td><td>${a ? esc(a.telefono) : '—'}</td><td>${SPE.fmtFecha(pr.fecha)}</td>
       <td><button class="btn btn-secundarios btn-chico" onclick="devolverAdmin('${esc(pr.id)}')">Marcar devuelta</button></td></tr>`;
   }).join('') : vacio(7, 'No hay computadoras en préstamo ahora mismo.');
   const hist = SPE.prestamos().filter(p => p.devuelto).slice(-10).reverse();

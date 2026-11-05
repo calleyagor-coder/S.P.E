@@ -53,11 +53,12 @@
           <div><label for="a-nombre">Nombre</label><input type="text" id="a-nombre" maxlength="40" placeholder="Nombre"></div>
           <div><label for="a-apellido">Apellido</label><input type="text" id="a-apellido" maxlength="40" placeholder="Apellido"></div>
           <div><label for="a-dni">DNI</label><input type="text" id="a-dni" inputmode="numeric" maxlength="8" placeholder="Sin puntos"></div>
+          <div><label for="a-email">Correo electrónico</label><input type="email" id="a-email" maxlength="60" placeholder="alumno@correo.com" autocomplete="off"></div>
           <div><label for="a-tel">Número de teléfono</label><input type="tel" id="a-tel" inputmode="tel" maxlength="15" placeholder="3825123456"></div>
           <div><label for="a-anio">Año</label>
-            <select id="a-anio"><option>1°</option><option>2°</option><option>3°</option><option>4°</option><option>5°</option><option>6°</option><option>Profesor</option></select></div>
+            <select id="a-anio" onchange="ajustarDivision()"><option>1°</option><option>2°</option><option>3°</option><option>4°</option><option>5°</option><option>6°</option><option>Profesor</option></select></div>
           <div><label for="a-div">División</label>
-            <select id="a-div"><option>A</option><option>B</option><option>C</option><option>D</option><option>—</option></select></div>
+            <select id="a-div"><option>1° Div</option><option>2° Div</option></select></div>
           <div><label for="a-estado">Estado</label>
             <select id="a-estado"><option>Activo</option><option>Inactivo</option><option>Suspendido</option></select></div>
         </div>
@@ -67,10 +68,10 @@
       <div class="panel-bloque">
         <div class="barra-herramientas">
           <h3 style="margin:0">Alumnos registrados <span id="cant-alumnos" class="chip chip-info"></span></h3>
-          <input type="search" id="buscar-alumno" placeholder="Buscar por nombre, DNI o curso..." oninput="renderAlumnos()">
+          <input type="search" id="buscar-alumno" placeholder="Buscar por nombre, DNI, correo o curso..." oninput="renderAlumnos()">
         </div>
         <div class="tabla-wrap"><table>
-          <thead><tr><th>Alumno</th><th>DNI</th><th>Teléfono</th><th>Curso</th><th>Estado</th><th>Equipo</th><th></th></tr></thead>
+          <thead><tr><th>Alumno</th><th>DNI</th><th>Correo</th><th>Teléfono</th><th>Curso</th><th>Estado</th><th>Equipo</th><th></th></tr></thead>
           <tbody id="tabla-alumnos"></tbody>
         </table></div>
       </div>

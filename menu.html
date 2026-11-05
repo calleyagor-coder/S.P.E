@@ -31,49 +31,53 @@
       <p>Pide, consulta y devuelve computadoras desde un solo lugar.</p>
     </div>
     <div class="caracteristicas-cuadricula">
-      <a href="cu-buscar.html" class="tarjeta tarjeta-estudiante">
-        <h4>Buscar computadora</h4>
-        <p>Encuentra computadoras por marca, modelo o características técnicas.</p>
-        <span class="btn-tarjeta" style="margin-top:auto;">Ir a buscar</span>
-      </a>
-      <a href="cu-disponibles.html" class="tarjeta tarjeta-estudiante">
-        <h4>Ver computadoras disponibles</h4>
-        <p>Consulta el stock libre dentro de la sala de informática.</p>
-        <span class="btn-tarjeta" style="margin-top:auto;">Ver lista</span>
-      </a>
-      <a href="cu-pedir.html" class="tarjeta tarjeta-estudiante">
-        <h4>Pedir computadora</h4>
-        <p>Genera una nueva solicitud de préstamo.</p>
-        <span class="btn-tarjeta" style="margin-top:auto;">Solicitar</span>
+
+      <!-- 1 · Ver computadoras disponibles (busca + pide) -->
+      <a href="cu-disponibles.html" class="tarjeta tarjeta-estudiante tarjeta-pcs">
+        <div class="tarjeta-cabecera"><span class="tarjeta-ico">💻</span><h4>Ver computadoras disponibles</h4></div>
+        <p>Busca, filtra y pide una computadora desde un solo lugar.</p>
+        <div class="pcs-resumen">
+          <div class="pcs-numero"><b id="pcs-libres">0</b><span id="pcs-total">de 0 equipos libres</span></div>
+          <div class="barra"><div id="pcs-barra" class="barra-relleno"></div></div>
+        </div>
+        <span class="btn-tarjeta">Ver y pedir <span class="flecha">→</span></span>
       </a>
 
-      <div class="tarjeta tarjeta-estudiante">
-        <h4>Marcar como devuelto</h4>
-        <p>Confirma la entrega de la computadora para que el inventario sea avisado.</p>
-        <div class="cu-box">
-          <div id="info-devolucion" style="font-size:.88rem;margin-bottom:.75rem;"></div>
-          <button id="btn-action-devolver" class="btn-tarjeta btn-tarjeta-alert" onclick="devolverEquipo()">Efectuar devolución</button>
-        </div>
+      <!-- 2 · Marcar como devuelto -->
+      <div class="tarjeta tarjeta-estudiante" id="tarjeta-devolver">
+        <div class="tarjeta-cabecera"><span class="tarjeta-ico">↩️</span><h4>Marcar como devuelto</h4></div>
+        <p>Confirma la entrega para que el inventario se actualice al instante.</p>
+        <div class="dev-estado" id="info-devolucion"></div>
+        <button id="btn-action-devolver" class="btn-tarjeta btn-tarjeta-alert" onclick="devolverEquipo()">Marcar como devuelto</button>
       </div>
 
-      <div class="tarjeta tarjeta-estudiante">
-        <h4>Editar perfil</h4>
-        <p>Actualiza tu avatar y tu descripción dentro de S.P.E.</p>
-        <div class="cu-caja-perfil">
-          <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem;">
-            <img id="avatar" class="avatar" src="img/hermanito.jpg" alt="Foto de perfil">
-            <button class="btn-sub" onclick="cambiarFoto()">Cambiar foto</button>
-            <input type="file" id="archivo-foto" accept="image/*" class="hidden">
+      <!-- 3 · Editar perfil -->
+      <div class="tarjeta tarjeta-estudiante" id="tarjeta-perfil">
+        <div class="tarjeta-cabecera"><span class="tarjeta-ico">✏️</span><h4>Editar perfil</h4></div>
+        <div class="perfil-fila">
+          <button type="button" class="avatar-btn" onclick="cambiarFoto()" aria-label="Cambiar foto de perfil">
+            <img id="avatar" class="avatar-grande" src="img/hermanito.jpg" alt="Foto de perfil">
+            <span class="avatar-cam">📷</span>
+          </button>
+          <input type="file" id="archivo-foto" accept="image/*" class="hidden">
+          <div class="perfil-datos">
+            <b id="perfil-nombre"></b>
+            <span id="perfil-curso"></span>
+            <small id="perfil-email"></small>
           </div>
-          <textarea id="desc-perfil" rows="2" style="margin-bottom:.7rem;" placeholder="Escribe algo sobre ti..."></textarea>
-          <button class="btn-tarjeta" onclick="guardarPerfil()">Guardar cambios</button>
         </div>
+        <div class="desc-caja">
+          <textarea id="desc-perfil" rows="2" maxlength="140" placeholder="Escribe algo sobre ti..."></textarea>
+          <span id="desc-contador" class="contador">0/140</span>
+        </div>
+        <button id="btn-guardar-perfil" class="btn-tarjeta" onclick="guardarPerfil()" disabled>Sin cambios</button>
       </div>
 
-      <div class="tarjeta tarjeta-estudiante">
-        <h4>Historial de peticiones</h4>
+      <!-- 4 · Historial de peticiones -->
+      <div class="tarjeta tarjeta-estudiante" id="tarjeta-historial">
+        <div class="tarjeta-cabecera"><span class="tarjeta-ico">🕘</span><h4>Historial de peticiones</h4><span id="hist-cant" class="chip chip-info"></span></div>
         <p>Tus últimas solicitudes de préstamo.</p>
-        <div class="contenedor-registros" id="menu-registros" style="margin-top:auto;"></div>
+        <ul class="linea-tiempo" id="menu-registros"></ul>
       </div>
     </div>
   </main>

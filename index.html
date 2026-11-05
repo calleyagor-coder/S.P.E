@@ -12,36 +12,48 @@
 <body>
   <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
   <main class="login-pantalla-completa">
-    <div class="tarjeta-centro">
+    <div class="tarjeta-centro" id="tarjeta-login" data-rol="estudiante">
       <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
       <h1 class="titulo-principal">S.P.E</h1>
       <p class="subtitulo-principal">Sistema de Préstamo de Computadoras</p>
 
-      <div id="rol-seleccionado">
+      <!-- PASO 1: elegir el tipo de acceso -->
+      <div id="rol-seleccionado" class="paso">
         <p class="instruccion-texto">¿Quién está ingresando?</p>
         <div class="cuadricula-roles-nueva">
-          <button class="btn btn-estudiante btn-rol" onclick="inicioSesionRol('estudiante')">
-            <span class="ico">🎓</span><span>Estudiante / Profesor<small>Pide y devuelve computadoras</small></span>
+          <button type="button" class="btn btn-estudiante btn-rol" onclick="inicioSesionRol('estudiante')">
+            <span class="ico">🎓</span>
+            <span class="rol-texto"><b>Estudiante / Profesor</b><small>Pide y devuelve computadoras</small></span>
+            <span class="flecha" aria-hidden="true">→</span>
           </button>
-          <button class="btn btn-admin btn-rol" onclick="inicioSesionRol('admin')">
-            <span class="ico">🛡️</span><span>Administrador<small>Gestiona alumnos y equipos</small></span>
+          <button type="button" class="btn btn-admin btn-rol" onclick="inicioSesionRol('admin')">
+            <span class="ico">🛡️</span>
+            <span class="rol-texto"><b>Administrador</b><small>Gestiona alumnos y equipos</small></span>
+            <span class="flecha" aria-hidden="true">→</span>
           </button>
         </div>
       </div>
 
-      <div id="seccion-login" class="hidden">
-        <h2 id="titulo-login" class="titulo-login-texto"></h2>
-        <div class="campo"><input type="text" id="usuario" placeholder="Usuario" autocomplete="username"></div>
-        <div class="campo">
+      <!-- PASO 2: datos de acceso -->
+      <div id="seccion-login" class="paso hidden">
+        <button type="button" class="volver-link" onclick="volverRoles()">← Cambiar tipo de acceso</button>
+        <div class="login-cabecera">
+          <span id="login-ico" class="login-ico">🎓</span>
+          <h2 id="titulo-login" class="titulo-login-texto"></h2>
+          <p id="sub-login" class="sub-login"></p>
+        </div>
+        <div class="campo campo-ico">
+          <span class="campo-icono" aria-hidden="true">👤</span>
+          <input type="text" id="usuario" placeholder="Usuario" autocomplete="username">
+        </div>
+        <div class="campo campo-ico">
+          <span class="campo-icono" aria-hidden="true">🔒</span>
           <input type="password" id="contraseña" placeholder="Contraseña" autocomplete="current-password">
           <button type="button" class="ver" onclick="verClave()" aria-label="Mostrar u ocultar contraseña">👁</button>
         </div>
         <p id="error-login" class="error-login" role="alert"></p>
-        <div class="btn-grupo-nuevo">
-          <button class="btn btn-secundarios" onclick="location.reload()">Volver</button>
-          <button class="btn btn-primarios" onclick="iniciandoSesion()">Ingresar</button>
-        </div>
-        <p class="pista">Estudiantes y profesores: ingresa con tu DNI como usuario y contraseña.</p>
+        <button type="button" id="btn-ingresar" class="btn btn-primarios w-100" onclick="iniciandoSesion()">Ingresar</button>
+        <p id="pista-login" class="pista"></p>
       </div>
     </div>
   </main>

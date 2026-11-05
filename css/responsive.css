@@ -3,7 +3,7 @@
   .caracteristicas-cuadricula{grid-template-columns:repeat(2,1fr)}
 }
 @media (min-width:1100px){
-  .caracteristicas-cuadricula{grid-template-columns:repeat(3,1fr)}
+  .caracteristicas-cuadricula{gap:1.8rem}
 }
 /* CELULARES */
 @media (max-width:767px){
@@ -23,5 +23,10 @@
   .seccion-footer{margin-top:2.5rem;padding:1.5rem 1rem}
   .contenedor-footer{align-items:flex-start;gap:1.5rem}
   .contenedor-izquierda,.footer-centro{width:100%;border-bottom:1px dashed var(--borde);padding-bottom:1rem}
-  .footer-logo-img{height:45px}
+  .footer-logo-img{height:64px}
+  .escuela-nombre{font-size:1.2rem}
+  .desc-escuela{font-size:1rem}
+  .footer-centro p{font-size:1rem}
+  .social-icon-img{height:48px}
+  .perfil-fila{gap:.8rem}
 }
