@@ -2,6 +2,29 @@ SPE.requerir('admin');
 const $ = id => document.getElementById(id), esc = SPE.esc;
 const vacio = (cols, txt) => `<tr><td colspan="${cols}" class="vacio">${txt}</td></tr>`;
 
+/* ---------- Ventana de edición (formulario emergente) ----------
+   guardar(valores) debe devolver true si se guardó, o false para dejar la ventana abierta (por ejemplo, si hay un error). */
+function abrirEditor(titulo, subtitulo, campos, guardar) {
+  const f = document.createElement('div'); f.className = 'modal-fondo';
+  const campo = c => `<div class="${c.ancho ? 'ancho' : ''}"><label for="ed-${c.id}">${esc(c.label)}</label>` + (c.opciones
+    ? `<select id="ed-${c.id}" ${c.disabled ? 'disabled' : ''}>${c.opciones.map(o => `<option ${o === c.valor ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`
+    : `<input id="ed-${c.id}" type="${c.tipo || 'text'}" value="${esc(c.valor)}" ${c.max ? `maxlength="${c.max}"` : ''} ${c.modo ? `inputmode="${c.modo}"` : ''} autocomplete="off">`) + '</div>';
+  f.innerHTML = `<div class="modal modal-ancho" role="dialog" aria-modal="true"><h3>${esc(titulo)}</h3><p>${esc(subtitulo)}</p>
+    <div class="form-modal">${campos.map(campo).join('')}</div>
+    <div class="fila"><button class="btn btn-secundarios btn-chico" data-r="0">Cancelar</button><button class="btn btn-primarios btn-chico" data-r="1">Guardar cambios</button></div></div>`;
+  const cerrar = () => { f.remove(); document.removeEventListener('keydown', esc_); };
+  const esc_ = e => { if (e.key === 'Escape') cerrar(); };
+  const intentar = () => {
+    const v = {}; campos.forEach(c => { v[c.id] = f.querySelector('#ed-' + c.id).value.trim(); });
+    if (guardar(v)) cerrar();
+  };
+  f.addEventListener('click', e => { const r = e.target.dataset.r; if (e.target === f || r === '0') cerrar(); else if (r === '1') intentar(); });
+  f.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') intentar(); });
+  document.addEventListener('keydown', esc_);
+  document.body.appendChild(f); f.querySelector('input,select').focus();
+  return f;
+}
+
 /* ---------- Pestañas ---------- */
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => mostrarTab(t.dataset.tab)));
 function mostrarTab(n) {
@@ -52,8 +75,45 @@ function renderAlumnos() {
     return `<tr><td><b>${esc(a.nombre)} ${esc(a.apellido)}</b></td><td>${esc(a.dni)}</td><td>${a.email ? esc(a.email) : '<small>—</small>'}</td><td>${esc(a.telefono)}</td>
       <td>${esc(SPE.curso(a))}</td><td>${SPE.chip(a.estado)}</td>
       <td>${pr ? `<span class="chip chip-info">${esc(p ? p.nombre : pr.pcId)}</span>` : '<small>Ninguno</small>'}</td>
-      <td><div class="acciones"><button class="btn btn-peligro btn-chico" onclick="eliminarAlumno('${esc(a.dni)}')">Eliminar</button></div></td></tr>`;
+      <td><div class="acciones"><button class="btn btn-secundarios btn-chico" onclick="editarAlumno('${esc(a.dni)}')">Editar</button><button class="btn btn-peligro btn-chico" onclick="eliminarAlumno('${esc(a.dni)}')">Eliminar</button></div></td></tr>`;
   }).join('') : vacio(8, 'No hay alumnos que coincidan. Registra uno con el formulario de arriba.');
+}
+function editarAlumno(dniOriginal) {
+  const a = SPE.alumno(dniOriginal); if (!a) return;
+  const ed = abrirEditor(`Editar a ${a.nombre} ${a.apellido}`, 'Modifica los datos y guarda los cambios.', [
+    { id:'nombre', label:'Nombre', valor:a.nombre, max:40 },
+    { id:'apellido', label:'Apellido', valor:a.apellido, max:40 },
+    { id:'dni', label:'DNI', valor:a.dni, max:8, modo:'numeric' },
+    { id:'email', label:'Correo electrónico', valor:a.email || '', max:60, tipo:'email' },
+    { id:'tel', label:'Número de teléfono', valor:a.telefono, max:15, tipo:'tel', modo:'tel' },
+    { id:'anio', label:'Año', valor:a.anio, opciones:['1°','2°','3°','4°','5°','6°','Profesor'] },
+    { id:'division', label:'División', valor:a.division, opciones:['1° Div','2° Div'] },
+    { id:'estado', label:'Estado', valor:a.estado, opciones:['Activo','Inactivo','Suspendido'] }
+  ], v => {
+    const soloLetras = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{2,40}$/, email = v.email.toLowerCase();
+    if (!soloLetras.test(v.nombre)) return SPE.toast('Escribe un nombre válido (solo letras).', 'error'), false;
+    if (!soloLetras.test(v.apellido)) return SPE.toast('Escribe un apellido válido (solo letras).', 'error'), false;
+    if (!/^\d{7,8}$/.test(v.dni)) return SPE.toast('El DNI debe tener 7 u 8 números.', 'error'), false;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return SPE.toast('Escribe un correo electrónico válido.', 'error'), false;
+    if (!/^\d{6,15}$/.test(v.tel)) return SPE.toast('El teléfono debe tener entre 6 y 15 números.', 'error'), false;
+    const todos = SPE.alumnos(), otros = todos.filter(x => x.dni !== dniOriginal);
+    if (otros.some(x => x.dni === v.dni)) return SPE.toast('Ya existe otro alumno con ese DNI.', 'error'), false;
+    if (otros.some(x => (x.email || '').toLowerCase() === email)) return SPE.toast('Ya existe otro alumno con ese correo.', 'error'), false;
+    const t = todos.find(x => x.dni === dniOriginal);
+    Object.assign(t, { nombre:v.nombre, apellido:v.apellido, dni:v.dni, email, telefono:v.tel, anio:v.anio,
+                       division:v.anio === 'Profesor' ? '—' : v.division, estado:v.estado });
+    SPE.guardarAlumnos(todos);
+    if (v.dni !== dniOriginal) { // si cambió el DNI, los préstamos del alumno lo siguen
+      const ps = SPE.prestamos(); ps.forEach(pr => { if (pr.dni === dniOriginal) pr.dni = v.dni; }); SPE.guardarPrestamos(ps);
+    }
+    SPE.log(`Alumno editado: ${v.nombre} ${v.apellido} (DNI ${v.dni})`);
+    SPE.toast('Datos del alumno actualizados.', 'ok'); renderTodo(); return true;
+  });
+  /* Los profesores no pertenecen a una división */
+  const anio = ed.querySelector('#ed-anio'), div = ed.querySelector('#ed-division');
+  if (a.anio === 'Profesor' || !['1° Div','2° Div'].includes(a.division)) div.value = '1° Div';
+  const ajustar = () => { const p = anio.value === 'Profesor'; div.disabled = p; div.style.opacity = p ? '.45' : ''; };
+  anio.addEventListener('change', ajustar); ajustar();
 }
 async function eliminarAlumno(dni) {
   const a = SPE.alumno(dni); if (!a) return;
@@ -96,7 +156,7 @@ function renderEquipos() {
     return `<tr><td><b>${esc(p.nombre)}</b></td><td>${esc(p.marca)}<small>${esc(p.modelo)}</small></td>
       <td>${esc(p.ram)} RAM<small>${esc(p.almacenamiento)}</small></td><td>${estado}</td>
       <td>${a ? esc(a.nombre) + ' ' + esc(a.apellido) : '<small>—</small>'}</td>
-      <td><button class="btn btn-peligro btn-chico" onclick="eliminarPc('${esc(p.id)}')">Eliminar</button></td></tr>`;
+      <td><div class="acciones"><button class="btn btn-secundarios btn-chico" onclick="editarPc('${esc(p.id)}')">Editar</button><button class="btn btn-peligro btn-chico" onclick="eliminarPc('${esc(p.id)}')">Eliminar</button></div></td></tr>`;
   }).join('') || vacio(6, 'No hay computadoras cargadas.');
 }
 function cambiarEstadoPc(id, estado) {
@@ -112,6 +172,26 @@ function agregarPc() {
   SPE.guardarPcs(t); SPE.log(`Computadora agregada: ${nombre}`);
   ['e-nombre','e-marca','e-modelo','e-ram','e-alm'].forEach(i => $(i).value = '');
   SPE.toast('Computadora agregada.', 'ok'); renderTodo();
+}
+function editarPc(id) {
+  const p = SPE.pc(id); if (!p) return;
+  const prestada = p.estado === 'Prestada';
+  abrirEditor(`Editar ${p.nombre}`, prestada ? 'Está en préstamo: su estado cambia cuando se devuelva.' : 'Modifica los datos y guarda los cambios.', [
+    { id:'nombre', label:'Nombre / etiqueta', valor:p.nombre, max:30 },
+    { id:'marca', label:'Marca', valor:p.marca, max:30 },
+    { id:'modelo', label:'Modelo', valor:p.modelo, max:40 },
+    { id:'ram', label:'Memoria RAM', valor:p.ram === '—' ? '' : p.ram, max:10 },
+    { id:'alm', label:'Almacenamiento', valor:p.almacenamiento === '—' ? '' : p.almacenamiento, max:20 },
+    { id:'estado', label:'Estado', valor:p.estado, disabled:prestada, opciones:prestada ? ['Prestada'] : ['Disponible','En reparación'] }
+  ], v => {
+    if (!v.nombre || !v.marca || !v.modelo) return SPE.toast('Completa nombre, marca y modelo.', 'error'), false;
+    const todas = SPE.pcs();
+    if (todas.some(x => x.id !== id && x.nombre.toLowerCase() === v.nombre.toLowerCase())) return SPE.toast('Ya existe otra computadora con ese nombre.', 'error'), false;
+    const t = todas.find(x => x.id === id); // el identificador interno no cambia, así los préstamos siguen asociados
+    Object.assign(t, { nombre:v.nombre, marca:v.marca, modelo:v.modelo, ram:v.ram || '—', almacenamiento:v.alm || '—', estado:prestada ? 'Prestada' : v.estado });
+    SPE.guardarPcs(todas); SPE.log(`Computadora editada: ${v.nombre}`);
+    SPE.toast('Computadora actualizada.', 'ok'); renderTodo(); return true;
+  });
 }
 async function eliminarPc(id) {
   const p = SPE.pc(id); if (!p) return;

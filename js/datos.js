@@ -1,19 +1,31 @@
 /* ===== S.P.E. · Capa de datos compartida (usa localStorage como base de datos) ===== */
 const SPE = (() => {
   const K = { pcs:'spe_pcs', alumnos:'spe_alumnos', prestamos:'spe_prestamos', log:'spe_log', sesion:'spe_sesion' };
-  const get = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } };
-  const set = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  /* ============================================================
+     ALMACÉN DE DATOS  ←  ÚNICO lugar que toca el navegador (localStorage).
+     Para conectar tu base de datos real, reemplaza este bloque (y las funciones
+     de "Tablas" y "Acciones de préstamo" de más abajo) por llamadas a tu API.
+     Ver database/LEEME.md
+     ============================================================ */
+  const Almacen = {
+    leer:     (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } },
+    escribir: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+    existe:   k => localStorage.getItem(k) !== null,
+    borrar:   k => localStorage.removeItem(k)
+  };
+  const get = Almacen.leer, set = Almacen.escribir;
 
   /* ---- Datos iniciales (solo la primera vez) ---- */
-  if (!localStorage.getItem(K.pcs)) set(K.pcs, [
+  if (!Almacen.existe(K.pcs)) set(K.pcs, [
     { id:'HP-01',  nombre:'Hp 01',              marca:'HP',            modelo:'ProBook 450 G8',   ram:'8 GB',  almacenamiento:'256 GB SSD', estado:'Disponible' },
     { id:'LEN-06', nombre:'Lenovo 06',          marca:'Lenovo',        modelo:'ThinkPad E14',     ram:'8 GB',  almacenamiento:'512 GB SSD', estado:'Disponible' },
     { id:'JM-18',  nombre:'Juana Manso 18',     marca:'Juana Manso',   modelo:'Netbook JM-2021',  ram:'4 GB',  almacenamiento:'128 GB SSD', estado:'Disponible' },
     { id:'CI-08',  nombre:'Conectar Igualdad 08', marca:'Conectar Igualdad', modelo:'Positivo BGH',  ram:'4 GB',  almacenamiento:'320 GB HDD', estado:'Prestada' },
     { id:'HP-02',  nombre:'Hp 02',              marca:'HP',            modelo:'250 G7',           ram:'4 GB',  almacenamiento:'500 GB HDD', estado:'En reparación' }
   ]);
-  if (!localStorage.getItem(K.alumnos)) set(K.alumnos, [
-    { dni:'49096596', nombre:'Yago',   apellido:'Cll',       email:'yago@ejemplo.com',   telefono:'3825671774', anio:'6°', division:'1° Div', estado:'Activo', foto:'', desc:'' },
+  if (!Almacen.existe(K.alumnos)) set(K.alumnos, [
+    { dni:'49096596', nombre:'Yago',   apellido:'Calle',     email:'yago@ejemplo.com',   telefono:'3825671774', anio:'6°', division:'1° Div', estado:'Activo', foto:'', desc:'' },
     { dni:'45123456', nombre:'Lucía',  apellido:'Fernández', email:'lucia@ejemplo.com',  telefono:'3825400111', anio:'5°', division:'2° Div', estado:'Activo', foto:'', desc:'' },
     { dni:'46234567', nombre:'Mateo',  apellido:'Ramírez',   email:'mateo@ejemplo.com',  telefono:'3825400222', anio:'4°', division:'1° Div', estado:'Activo', foto:'', desc:'' }
   ]);
@@ -23,14 +35,15 @@ const SPE = (() => {
     l.forEach(a => {
       if (a.email === undefined) { a.email = ''; c = true; }
       if (m[a.division]) { a.division = m[a.division]; c = true; }
+      if (a.dni === '49096596' && a.apellido === 'Cll') { a.apellido = 'Calle'; c = true; } // corrige el apellido de la versión anterior
     });
     if (c) set(K.alumnos, l);
   })();
-  if (!localStorage.getItem(K.prestamos)) set(K.prestamos, [
+  if (!Almacen.existe(K.prestamos)) set(K.prestamos, [
     { id:'P-1', pcId:'CI-08', dni:'46234567', fecha:new Date().toISOString(), devuelto:null }
   ]);
-  if (!localStorage.getItem(K.log)) set(K.log, []);
-  localStorage.removeItem('prestamo_activo'); // clave de la versión anterior
+  if (!Almacen.existe(K.log)) set(K.log, []);
+  Almacen.borrar('prestamo_activo'); // clave de la versión anterior
 
   /* ---- Utilidades ---- */
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -43,13 +56,17 @@ const SPE = (() => {
   /* ---- Sesión ---- */
   const sesion = () => get(K.sesion, null);
   const setSesion = s => set(K.sesion, s);
-  const cerrarSesion = () => { localStorage.removeItem(K.sesion); location.href = 'index.html'; };
+  const cerrarSesion = () => { Almacen.borrar(K.sesion); location.href = 'index.html'; };
   const requerir = rol => { const s = sesion(); if (!s || s.rol !== rol) { location.replace('index.html'); return null; } return s; };
 
   /* ---- Tablas ---- */
   const alumnos = () => get(K.alumnos, []);
   const guardarAlumnos = v => set(K.alumnos, v);
   const alumno = dni => alumnos().find(a => a.dni === dni);
+  /* Normaliza texto para comparar: sin tildes, sin mayúsculas y sin espacios repetidos ("  yago   CALLE " → "yago calle") */
+  const norm = t => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  /* Usuario = "Nombre Apellido" (o el DNI) · Contraseña = DNI */
+  const buscarLogin = (usuario, clave) => { const u = norm(usuario); return alumnos().find(a => a.dni === String(clave).trim() && (norm(nombreCompleto(a)) === u || a.dni === u)); };
   const nombreCompleto = a => a ? `${a.nombre} ${a.apellido}` : 'Desconocido';
   const curso = a => !a ? '—' : (a.anio === 'Profesor' ? 'Profesor' : `${a.anio} año · ${a.division}`);
   const pcs = () => get(K.pcs, []);
@@ -109,6 +126,6 @@ const SPE = (() => {
     const r = t.getBoundingClientRect(); t.style.setProperty('--mx', (e.clientX - r.left) + 'px'); t.style.setProperty('--my', (e.clientY - r.top) + 'px');
   });
 
-  return { sesion, setSesion, cerrarSesion, requerir, alumnos, guardarAlumnos, alumno, nombreCompleto, curso, pcs, guardarPcs, pc,
+  return { norm, buscarLogin, sesion, setSesion, cerrarSesion, requerir, alumnos, guardarAlumnos, alumno, nombreCompleto, curso, pcs, guardarPcs, pc,
            prestamos, guardarPrestamos, activos, prestamoDe, pedir, devolver, log, logs, toast, confirmar, esc, fmtFecha, chip };
 })();

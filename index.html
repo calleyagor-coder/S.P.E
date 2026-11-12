@@ -8,55 +8,95 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/estilo.css">
   <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/inicio.css">
 </head>
 <body>
   <div class="contenedor-video"><video autoplay muted loop playsinline><source src="media/FondoPaginaWeb.mp4" type="video/mp4"></video></div>
-  <main class="login-pantalla-completa">
-    <div class="tarjeta-centro" id="tarjeta-login" data-rol="estudiante">
-      <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
-      <h1 class="titulo-principal">S.P.E</h1>
-      <p class="subtitulo-principal">Sistema de Préstamo de Computadoras</p>
 
-      <!-- PASO 1: elegir el tipo de acceso -->
-      <div id="rol-seleccionado" class="paso">
-        <p class="instruccion-texto">¿Quién está ingresando?</p>
-        <div class="cuadricula-roles-nueva">
-          <button type="button" class="btn btn-estudiante btn-rol" onclick="inicioSesionRol('estudiante')">
-            <span class="ico">🎓</span>
-            <span class="rol-texto"><b>Estudiante / Profesor</b><small>Pide y devuelve computadoras</small></span>
-            <span class="flecha" aria-hidden="true">→</span>
-          </button>
-          <button type="button" class="btn btn-admin btn-rol" onclick="inicioSesionRol('admin')">
-            <span class="ico">🛡️</span>
-            <span class="rol-texto"><b>Administrador</b><small>Gestiona alumnos y equipos</small></span>
-            <span class="flecha" aria-hidden="true">→</span>
-          </button>
-        </div>
+  <main class="inicio">
+
+    <!-- ===== PRESENTACIÓN ===== -->
+    <section class="hero" aria-label="Presentación">
+      <div class="hero-marca">
+        <img src="img/LogoSPE.ico" alt="Logo SPE" class="logo-gigante">
+        <h1 class="titulo-principal">S.P.E</h1>
+      </div>
+      <p class="hero-sub">Sistema de Préstamo de Computadoras</p>
+
+      <p class="hero-frase"><span id="frase"></span><span class="cursor" aria-hidden="true"></span></p>
+      <p class="hero-texto">Pide una computadora, sigue tu préstamo y devuélvela sin papeles ni filas. Todo el inventario de la escuela, siempre al día.</p>
+
+      <div class="hero-stats" id="hero-stats">
+        <div class="hero-stat"><b data-n="0" id="st-disp">0</b><span>Equipos disponibles</span></div>
+        <div class="hero-stat"><b data-n="0" id="st-pcs">0</b><span>Computadoras</span></div>
+        <div class="hero-stat"><b data-n="0" id="st-alu">0</b><span>Usuarios activos</span></div>
       </div>
 
-      <!-- PASO 2: datos de acceso -->
-      <div id="seccion-login" class="paso hidden">
-        <button type="button" class="volver-link" onclick="volverRoles()">← Cambiar tipo de acceso</button>
-        <div class="login-cabecera">
-          <span id="login-ico" class="login-ico">🎓</span>
-          <h2 id="titulo-login" class="titulo-login-texto"></h2>
-          <p id="sub-login" class="sub-login"></p>
-        </div>
-        <div class="campo campo-ico">
-          <span class="campo-icono" aria-hidden="true">👤</span>
-          <input type="text" id="usuario" placeholder="Usuario" autocomplete="username">
-        </div>
-        <div class="campo campo-ico">
-          <span class="campo-icono" aria-hidden="true">🔒</span>
-          <input type="password" id="contraseña" placeholder="Contraseña" autocomplete="current-password">
-          <button type="button" class="ver" onclick="verClave()" aria-label="Mostrar u ocultar contraseña">👁</button>
-        </div>
-        <p id="error-login" class="error-login" role="alert"></p>
-        <button type="button" id="btn-ingresar" class="btn btn-primarios w-100" onclick="iniciandoSesion()">Ingresar</button>
-        <p id="pista-login" class="pista"></p>
+      <ul class="hero-puntos">
+        <li><span>⚡</span> Pedidos en segundos</li>
+        <li><span>🔄</span> Devolución simple</li>
+        <li><span>📋</span> Historial siempre a mano</li>
+      </ul>
+
+      <!-- Tarjetas flotantes decorativas -->
+      <div class="flotantes" aria-hidden="true">
+        <div class="flota f1" data-prof="14">💻 <b>Hp 01</b> disponible</div>
+        <div class="flota f2" data-prof="-10">✅ Devolución confirmada</div>
+        <div class="flota f3" data-prof="18">🎓 Cuenta activa</div>
       </div>
-    </div>
+    </section>
+
+    <!-- ===== LOGIN ===== -->
+    <section class="login-lado">
+      <div class="tarjeta-centro" id="tarjeta-login" data-rol="estudiante">
+        <div class="login-saludo">
+          <h2>¡Bienvenido! <span class="mano">👋</span></h2>
+          <p>Ingresa para continuar</p>
+        </div>
+
+        <!-- PASO 1: elegir el tipo de acceso -->
+        <div id="rol-seleccionado" class="paso">
+          <p class="instruccion-texto">¿Quién está ingresando?</p>
+          <div class="cuadricula-roles-nueva">
+            <button type="button" class="btn btn-estudiante btn-rol" onclick="inicioSesionRol('estudiante')">
+              <span class="ico">🎓</span>
+              <span class="rol-texto"><b>Estudiante / Profesor</b><small>Pide y devuelve computadoras</small></span>
+              <span class="flecha" aria-hidden="true">→</span>
+            </button>
+            <button type="button" class="btn btn-admin btn-rol" onclick="inicioSesionRol('admin')">
+              <span class="ico">🛡️</span>
+              <span class="rol-texto"><b>Administrador</b><small>Gestiona alumnos y equipos</small></span>
+              <span class="flecha" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 2: datos de acceso -->
+        <div id="seccion-login" class="paso hidden">
+          <button type="button" class="volver-link" onclick="volverRoles()">← Cambiar tipo de acceso</button>
+          <div class="login-cabecera">
+            <span id="login-ico" class="login-ico">🎓</span>
+            <h2 id="titulo-login" class="titulo-login-texto"></h2>
+            <p id="sub-login" class="sub-login"></p>
+          </div>
+          <div class="campo campo-ico">
+            <span class="campo-icono" aria-hidden="true">👤</span>
+            <input type="text" id="usuario" placeholder="Nombre y apellido" autocomplete="username">
+          </div>
+          <div class="campo campo-ico">
+            <span class="campo-icono" aria-hidden="true">🔒</span>
+            <input type="password" id="contraseña" placeholder="Contraseña (tu DNI)" autocomplete="current-password" inputmode="numeric">
+            <button type="button" class="ver" onclick="verClave()" aria-label="Mostrar u ocultar contraseña">👁</button>
+          </div>
+          <p id="error-login" class="error-login" role="alert"></p>
+          <button type="button" id="btn-ingresar" class="btn btn-primarios w-100" onclick="iniciandoSesion()">Ingresar</button>
+        </div>
+
+        <p class="cred-nota">El usuario es nombre y apellido; la contraseña es el DNI.</p>
+      </div>
+    </section>
   </main>
+
   <script src="js/datos.js"></script>
   <script src="js/index.js"></script>
 </body>

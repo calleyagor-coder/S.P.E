@@ -369,3 +369,10 @@ select.mini{width:auto;margin:0;padding:.4rem .6rem;font-size:.85rem}
 .specs{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
 .spec{padding:.2rem .6rem;border-radius:8px;font-size:.78rem;background:rgba(255,255,255,.07);border:1px solid var(--borde);color:var(--txt)}
 .pc-card .btn{margin-top:auto}
+
+/* ---------- Ventana de edición (admin) ---------- */
+.modal-ancho{max-width:620px;max-height:calc(100vh - 2rem);overflow-y:auto}
+.modal-ancho p{margin-bottom:1.2rem}
+.form-modal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem;margin-bottom:.4rem}
+.form-modal .ancho{grid-column:1 / -1}
+@media (max-width:560px){.form-modal{grid-template-columns:1fr}}
