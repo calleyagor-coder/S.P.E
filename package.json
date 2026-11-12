@@ -1,0 +1,10 @@
+{
+  "name": "spe",
+  "version": "1.0.0",
+  "description": "S.P.E. - Sistema de Préstamo de Computadoras (C.E.N. Nonogasta)",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
