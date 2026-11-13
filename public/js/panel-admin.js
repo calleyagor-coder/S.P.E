@@ -3,7 +3,7 @@ const $ = id => document.getElementById(id), esc = SPE.esc;
 const vacio = (cols, txt) => `<tr><td colspan="${cols}" class="vacio">${txt}</td></tr>`;
 
 /* ---------- Ventana de edición (formulario emergente) ----------
-   guardar(valores) debe devolver true si se guardó, o false para dejar la ventana abierta (por ejemplo, si hay un error). */
+   guardar(valores) puede ser async y debe devolver true si se guardó, o false para dejar la ventana abierta (por ejemplo, si hay un error). */
 function abrirEditor(titulo, subtitulo, campos, guardar) {
   const f = document.createElement('div'); f.className = 'modal-fondo';
   const campo = c => `<div class="${c.ancho ? 'ancho' : ''}"><label for="ed-${c.id}">${esc(c.label)}</label>` + (c.opciones
@@ -14,9 +14,15 @@ function abrirEditor(titulo, subtitulo, campos, guardar) {
     <div class="fila"><button class="btn btn-secundarios btn-chico" data-r="0">Cancelar</button><button class="btn btn-primarios btn-chico" data-r="1">Guardar cambios</button></div></div>`;
   const cerrar = () => { f.remove(); document.removeEventListener('keydown', esc_); };
   const esc_ = e => { if (e.key === 'Escape') cerrar(); };
-  const intentar = () => {
+  let ocupado = false;
+  const intentar = async () => {
+    if (ocupado) return;
     const v = {}; campos.forEach(c => { v[c.id] = f.querySelector('#ed-' + c.id).value.trim(); });
-    if (guardar(v)) cerrar();
+    const btn = f.querySelector('[data-r="1"]'); ocupado = true; btn.disabled = true; btn.textContent = 'Guardando…';
+    let ok = false;
+    try { ok = await guardar(v); } catch (e) { SPE.toast(e.message, 'error'); }
+    ocupado = false; btn.disabled = false; btn.textContent = 'Guardar cambios';
+    if (ok) cerrar();
   };
   f.addEventListener('click', e => { const r = e.target.dataset.r; if (e.target === f || r === '0') cerrar(); else if (r === '1') intentar(); });
   f.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') intentar(); });
@@ -41,12 +47,12 @@ function renderResumen() {
                  [pcs.length,'Computadoras'],[n('Disponible'),'Disponibles'],[n('Prestada'),'En préstamo'],[n('En reparación'),'En reparación']];
   $('stats').innerHTML = datos.map(d => `<div class="stat"><b>${d[0]}</b><span>${d[1]}</span></div>`).join('');
   const l = SPE.logs();
-  $('actividad').innerHTML = '<p class="ok">• Servidor en funcionamiento. Monitoreando cambios...</p>' +
+  $('actividad').innerHTML = '<p class="ok">• Conectado a la base de datos (Supabase).</p>' +
     l.map(x => `<p>• ${SPE.fmtFecha(x.t)} — ${esc(x.msg)}</p>`).join('');
 }
 
 /* ---------- Alumnos ---------- */
-function registrarAlumno() {
+async function registrarAlumno() {
   const nombre = $('a-nombre').value.trim(), apellido = $('a-apellido').value.trim(),
         dni = $('a-dni').value.trim(), tel = $('a-tel').value.trim(), email = $('a-email').value.trim().toLowerCase();
   const soloLetras = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{2,40}$/;
@@ -59,8 +65,10 @@ function registrarAlumno() {
   if (todos.some(a => a.dni === dni)) return SPE.toast('Ya existe un alumno con ese DNI.', 'error');
   if (todos.some(a => (a.email || '').toLowerCase() === email)) return SPE.toast('Ya existe un alumno con ese correo.', 'error');
   const esProf = $('a-anio').value === 'Profesor';
-  todos.push({ dni, nombre, apellido, email, telefono:tel, anio:$('a-anio').value, division:esProf ? '—' : $('a-div').value, estado:$('a-estado').value, foto:'', desc:'' });
-  SPE.guardarAlumnos(todos); SPE.log(`Alumno registrado: ${nombre} ${apellido} (DNI ${dni})`);
+  try {
+    await SPE.crearAlumno({ dni, nombre, apellido, email, telefono:tel, anio:$('a-anio').value, division:esProf ? '—' : $('a-div').value, estado:$('a-estado').value });
+  } catch (e) { return SPE.toast(e.message, 'error'); }
+  SPE.log(`Alumno registrado: ${nombre} ${apellido} (DNI ${dni})`);
   ['a-nombre','a-apellido','a-dni','a-email','a-tel'].forEach(i => $(i).value = '');
   SPE.toast(`${nombre} ${apellido} fue registrado.`, 'ok'); renderTodo();
 }
@@ -89,7 +97,7 @@ function editarAlumno(dniOriginal) {
     { id:'anio', label:'Año', valor:a.anio, opciones:['1°','2°','3°','4°','5°','6°','Profesor'] },
     { id:'division', label:'División', valor:a.division, opciones:['1° Div','2° Div'] },
     { id:'estado', label:'Estado', valor:a.estado, opciones:['Activo','Inactivo','Suspendido'] }
-  ], v => {
+  ], async v => {
     const soloLetras = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]{2,40}$/, email = v.email.toLowerCase();
     if (!soloLetras.test(v.nombre)) return SPE.toast('Escribe un nombre válido (solo letras).', 'error'), false;
     if (!soloLetras.test(v.apellido)) return SPE.toast('Escribe un apellido válido (solo letras).', 'error'), false;
@@ -99,13 +107,9 @@ function editarAlumno(dniOriginal) {
     const todos = SPE.alumnos(), otros = todos.filter(x => x.dni !== dniOriginal);
     if (otros.some(x => x.dni === v.dni)) return SPE.toast('Ya existe otro alumno con ese DNI.', 'error'), false;
     if (otros.some(x => (x.email || '').toLowerCase() === email)) return SPE.toast('Ya existe otro alumno con ese correo.', 'error'), false;
-    const t = todos.find(x => x.dni === dniOriginal);
-    Object.assign(t, { nombre:v.nombre, apellido:v.apellido, dni:v.dni, email, telefono:v.tel, anio:v.anio,
-                       division:v.anio === 'Profesor' ? '—' : v.division, estado:v.estado });
-    SPE.guardarAlumnos(todos);
-    if (v.dni !== dniOriginal) { // si cambió el DNI, los préstamos del alumno lo siguen
-      const ps = SPE.prestamos(); ps.forEach(pr => { if (pr.dni === dniOriginal) pr.dni = v.dni; }); SPE.guardarPrestamos(ps);
-    }
+    // si cambia el DNI, los préstamos del alumno lo siguen solos (ON UPDATE CASCADE en la base)
+    await SPE.editarAlumno(dniOriginal, { nombre:v.nombre, apellido:v.apellido, dni:v.dni, email, telefono:v.tel, anio:v.anio,
+                                          division:v.anio === 'Profesor' ? '—' : v.division, estado:v.estado });
     SPE.log(`Alumno editado: ${v.nombre} ${v.apellido} (DNI ${v.dni})`);
     SPE.toast('Datos del alumno actualizados.', 'ok'); renderTodo(); return true;
   });
@@ -122,8 +126,7 @@ async function eliminarAlumno(dni) {
     pr ? 'Tiene un equipo en préstamo: se marcará como devuelto y el alumno será eliminado. Esta acción no se puede deshacer.'
        : 'El alumno será eliminado del sistema. Esta acción no se puede deshacer.', 'Eliminar');
   if (!ok) return;
-  if (pr) SPE.devolver(pr.id, true);
-  SPE.guardarAlumnos(SPE.alumnos().filter(x => x.dni !== dni));
+  try { await SPE.eliminarAlumno(dni); } catch (e) { return SPE.toast(e.message, 'error'); }
   SPE.log(`Alumno eliminado: ${a.nombre} ${a.apellido} (DNI ${dni})`);
   SPE.toast('Alumno eliminado.', 'ok'); renderTodo();
 }
@@ -144,7 +147,7 @@ function renderPrestamos() {
     return `<tr><td>${esc(p ? p.nombre : pr.pcId)}</td><td>${a ? esc(a.nombre) + ' ' + esc(a.apellido) : 'Alumno eliminado'}</td><td>${SPE.fmtFecha(pr.fecha)}</td><td>${SPE.fmtFecha(pr.devuelto)}</td></tr>`;
   }).join('') : vacio(4, 'Aún no hay devoluciones.');
 }
-function devolverAdmin(id) { const r = SPE.devolver(id, true); SPE.toast(r.msg, r.ok ? 'ok' : 'error'); renderTodo(); }
+async function devolverAdmin(id) { const r = await SPE.devolver(id, true); SPE.toast(r.msg, r.ok ? 'ok' : 'error'); renderTodo(); }
 
 /* ---------- Computadoras ---------- */
 function renderEquipos() {
@@ -159,17 +162,19 @@ function renderEquipos() {
       <td><div class="acciones"><button class="btn btn-secundarios btn-chico" onclick="editarPc('${esc(p.id)}')">Editar</button><button class="btn btn-peligro btn-chico" onclick="eliminarPc('${esc(p.id)}')">Eliminar</button></div></td></tr>`;
   }).join('') || vacio(6, 'No hay computadoras cargadas.');
 }
-function cambiarEstadoPc(id, estado) {
-  const t = SPE.pcs(); const p = t.find(x => x.id === id); p.estado = estado; SPE.guardarPcs(t);
+async function cambiarEstadoPc(id, estado) {
+  const p = SPE.pc(id); if (!p) return;
+  try { await SPE.editarPc(id, { estado }); } catch (e) { SPE.toast(e.message, 'error'); return renderTodo(); }
   SPE.log(`${p.nombre} cambió a "${estado}"`); SPE.toast(`${p.nombre}: ${estado}`, 'ok'); renderTodo();
 }
-function agregarPc() {
+async function agregarPc() {
   const v = i => $(i).value.trim(), nombre = v('e-nombre'), marca = v('e-marca'), modelo = v('e-modelo');
   if (!nombre || !marca || !modelo) return SPE.toast('Completa nombre, marca y modelo.', 'error');
   const t = SPE.pcs(), id = nombre.toUpperCase().replace(/\s+/g, '-');
   if (t.some(p => p.id === id)) return SPE.toast('Ya existe una computadora con ese nombre.', 'error');
-  t.push({ id, nombre, marca, modelo, ram:v('e-ram') || '—', almacenamiento:v('e-alm') || '—', estado:'Disponible' });
-  SPE.guardarPcs(t); SPE.log(`Computadora agregada: ${nombre}`);
+  try { await SPE.crearPc({ id, nombre, marca, modelo, ram:v('e-ram') || '—', almacenamiento:v('e-alm') || '—', estado:'Disponible' }); }
+  catch (e) { return SPE.toast(e.message, 'error'); }
+  SPE.log(`Computadora agregada: ${nombre}`);
   ['e-nombre','e-marca','e-modelo','e-ram','e-alm'].forEach(i => $(i).value = '');
   SPE.toast('Computadora agregada.', 'ok'); renderTodo();
 }
@@ -183,13 +188,13 @@ function editarPc(id) {
     { id:'ram', label:'Memoria RAM', valor:p.ram === '—' ? '' : p.ram, max:10 },
     { id:'alm', label:'Almacenamiento', valor:p.almacenamiento === '—' ? '' : p.almacenamiento, max:20 },
     { id:'estado', label:'Estado', valor:p.estado, disabled:prestada, opciones:prestada ? ['Prestada'] : ['Disponible','En reparación'] }
-  ], v => {
+  ], async v => {
     if (!v.nombre || !v.marca || !v.modelo) return SPE.toast('Completa nombre, marca y modelo.', 'error'), false;
     const todas = SPE.pcs();
     if (todas.some(x => x.id !== id && x.nombre.toLowerCase() === v.nombre.toLowerCase())) return SPE.toast('Ya existe otra computadora con ese nombre.', 'error'), false;
-    const t = todas.find(x => x.id === id); // el identificador interno no cambia, así los préstamos siguen asociados
-    Object.assign(t, { nombre:v.nombre, marca:v.marca, modelo:v.modelo, ram:v.ram || '—', almacenamiento:v.alm || '—', estado:prestada ? 'Prestada' : v.estado });
-    SPE.guardarPcs(todas); SPE.log(`Computadora editada: ${v.nombre}`);
+    // el identificador interno (id) no cambia, así los préstamos siguen asociados
+    await SPE.editarPc(id, { nombre:v.nombre, marca:v.marca, modelo:v.modelo, ram:v.ram || '—', almacenamiento:v.alm || '—', estado:prestada ? 'Prestada' : v.estado });
+    SPE.log(`Computadora editada: ${v.nombre}`);
     SPE.toast('Computadora actualizada.', 'ok'); renderTodo(); return true;
   });
 }
@@ -197,9 +202,10 @@ async function eliminarPc(id) {
   const p = SPE.pc(id); if (!p) return;
   if (p.estado === 'Prestada') return SPE.toast('No se puede eliminar una computadora en préstamo.', 'error');
   if (!await SPE.confirmar(`Eliminar ${p.nombre}`, 'La computadora saldrá del inventario.', 'Eliminar')) return;
-  SPE.guardarPcs(SPE.pcs().filter(x => x.id !== id)); SPE.log(`Computadora eliminada: ${p.nombre}`); renderTodo();
+  try { await SPE.eliminarPc(id); } catch (e) { return SPE.toast(e.message, 'error'); }
+  SPE.log(`Computadora eliminada: ${p.nombre}`); SPE.toast('Computadora eliminada.', 'ok'); renderTodo();
 }
 
 function renderTodo() { renderResumen(); renderAlumnos(); renderPrestamos(); renderEquipos(); }
-renderTodo();
 mostrarTab(localStorage.getItem('spe_tab_admin') || 'resumen');
+SPE.cargar().then(renderTodo).catch(e => SPE.toast(e.message, 'error'));

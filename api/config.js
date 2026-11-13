@@ -2,7 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Si existe SUPABASE_SECRET_KEY (clave secreta, solo en Vercel) se usa esa; si no, la publishable (SUPABASE_ANON_KEY)
+const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_ANON_KEY;
 
 export const configurado = Boolean(supabaseUrl && supabaseKey);
 export const supabase = createClient(supabaseUrl || 'http://localhost', supabaseKey || 'sin-clave');

@@ -45,7 +45,7 @@ async function devolverEquipo() {
   const pr = SPE.prestamoDe(ses.dni); if (!pr) return;
   const p = SPE.pc(pr.pcId);
   if (!await SPE.confirmar('Confirmar devolución', `¿Entregaste ${p ? p.nombre : 'el equipo'} en la sala de informática?`, 'Sí, lo devolví', false)) return;
-  const r = SPE.devolver(pr.id);
+  const r = await SPE.devolver(pr.id);
   SPE.toast(r.msg, r.ok ? 'ok' : 'error');
   renderTodo();
   if (r.ok) destello('tarjeta-devolver');
@@ -76,7 +76,7 @@ function cambiarFoto() { $('archivo-foto').click(); }
 $('archivo-foto').addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   const img = new Image(), url = URL.createObjectURL(f);
-  img.onload = () => { // se reduce a 128px para que entre en localStorage
+  img.onload = () => { // se reduce a 128px para que ocupe poco en la base
     const c = document.createElement('canvas'); c.width = c.height = 128;
     const s = Math.min(img.width, img.height), ctx = c.getContext('2d');
     ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 128, 128);
@@ -86,12 +86,15 @@ $('archivo-foto').addEventListener('change', e => {
   img.src = url;
 });
 $('desc-perfil').addEventListener('input', actualizarPerfil);
-function guardarPerfil() {
-  const todos = SPE.alumnos(), a = todos.find(x => x.dni === ses.dni); if (!a) return;
-  const src = $('avatar').getAttribute('src'); a.foto = src.startsWith('data:') ? src : a.foto;
-  a.desc = $('desc-perfil').value.trim(); SPE.guardarAlumnos(todos);
-  SPE.toast('Perfil guardado con éxito.', 'ok');
-  renderPerfil(); destello('tarjeta-perfil');
+async function guardarPerfil() {
+  const a = SPE.alumno(ses.dni); if (!a) return;
+  const src = $('avatar').getAttribute('src'), b = $('btn-guardar-perfil');
+  b.disabled = true; b.textContent = 'Guardando…';
+  try {
+    await SPE.editarAlumno(ses.dni, { foto:src.startsWith('data:') ? src : a.foto, desc:$('desc-perfil').value.trim() });
+    SPE.toast('Perfil guardado con éxito.', 'ok');
+    renderPerfil(); destello('tarjeta-perfil');
+  } catch (e) { SPE.toast(e.message, 'error'); actualizarPerfil(); }
 }
 
 /* ---------- Tarjeta 4: historial ---------- */
@@ -115,10 +118,10 @@ function renderTodo() {
   $('saludo').innerText = `Hola, ${a ? a.nombre : ses.nombre}`;
   renderPcs(); renderDevolucion(); renderHistorial();
 }
-renderTodo(); renderPerfil();
-// El tiempo de uso se actualiza solo, y el stock se refresca si cambia en otra pestaña
+SPE.cargar().then(() => { renderTodo(); renderPerfil(); }).catch(e => SPE.toast(e.message, 'error'));
+// El tiempo de uso se actualiza solo, y el stock se refresca cada tanto (por si otro usuario pidió o devolvió algo)
 setInterval(() => {
   const pr = SPE.prestamoDe(ses.dni), el = $('tiempo-uso');
   if (pr && el) el.textContent = duracion(Date.now() - new Date(pr.fecha));
 }, 30000);
-window.addEventListener('storage', renderTodo);
+setInterval(() => SPE.cargar('pcs', 'prestamos').then(renderTodo).catch(() => {}), 20000);

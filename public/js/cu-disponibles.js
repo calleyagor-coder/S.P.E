@@ -40,8 +40,9 @@ function setFiltro(v) { filtro = v; render(); }
 async function pedir(id) {
   const p = SPE.pc(id); if (!p) return;
   if (!await SPE.confirmar(`Pedir ${p.nombre}`, `${p.marca} ${p.modelo} · ${p.ram} RAM · ${p.almacenamiento}. Quedará a tu nombre hasta que la devuelvas.`, 'Confirmar pedido', false)) return;
-  const r = SPE.pedir(id, ses.dni);
+  const r = await SPE.pedir(id, ses.dni);
   SPE.toast(r.msg, r.ok ? 'ok' : 'error');
   if (r.ok) setTimeout(() => location.href = 'menu.html', 900); else render();
 }
-render();
+SPE.cargar('pcs', 'prestamos', 'alumnos').then(render).catch(e => SPE.toast(e.message, 'error'));
+setInterval(() => SPE.cargar('pcs', 'prestamos').then(render).catch(() => {}), 20000); // el stock se refresca solo

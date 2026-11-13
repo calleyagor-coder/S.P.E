@@ -1,49 +1,37 @@
-/* ===== S.P.E. · Capa de datos compartida (usa localStorage como base de datos) ===== */
+/* ===== S.P.E. · Capa de datos compartida (habla con la API /api → Supabase) =====
+   Los datos se descargan una vez con SPE.cargar() y se guardan en memoria (C).
+   Las funciones de lectura (alumnos(), pcs(), prestamos()...) son síncronas y leen esa copia.
+   Las que modifican algo (crearAlumno, pedir, devolver...) son async: llaman a la API y luego recargan. */
 const SPE = (() => {
-  const K = { pcs:'spe_pcs', alumnos:'spe_alumnos', prestamos:'spe_prestamos', log:'spe_log', sesion:'spe_sesion' };
+  const K_SESION = 'spe_sesion';            // la sesión sí queda en el navegador (solo quién entró)
+  let C = { alumnos:[], pcs:[], prestamos:[], log:[] };
 
-  /* ============================================================
-     ALMACÉN DE DATOS  ←  ÚNICO lugar que toca el navegador (localStorage).
-     Para conectar tu base de datos real, reemplaza este bloque (y las funciones
-     de "Tablas" y "Acciones de préstamo" de más abajo) por llamadas a tu API.
-     Ver database/LEEME.md
-     ============================================================ */
-  const Almacen = {
-    leer:     (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch (e) { return d; } },
-    escribir: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-    existe:   k => localStorage.getItem(k) !== null,
-    borrar:   k => localStorage.removeItem(k)
+  /* ---- Llamada a la API ---- */
+  async function api(ruta, metodo = 'GET', cuerpo) {
+    let r;
+    try {
+      r = await fetch('/api/' + ruta, { method:metodo, headers:cuerpo ? { 'Content-Type':'application/json' } : undefined, body:cuerpo ? JSON.stringify(cuerpo) : undefined });
+    } catch (e) { throw new Error('No hay conexión con el servidor.'); }
+    let d = null; try { d = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((d && d.error) || `Error del servidor (${r.status}).`);
+    return d;
+  }
+  const q = v => encodeURIComponent(v);
+
+  /* ---- Conversión entre la base (pc_id, descripcion) y la página (pcId, desc) ---- */
+  const deAlumno = a => ({ ...a, foto:a.foto || '', desc:a.descripcion || '', email:a.email || '' });
+  const dePrestamo = p => ({ id:p.id, pcId:p.pc_id, dni:p.dni, fecha:p.fecha, devuelto:p.devuelto });
+  const aAlumnoDB = a => { const o = {}; ['dni','nombre','apellido','email','telefono','anio','division','estado'].forEach(k => { if (a[k] !== undefined) o[k] = a[k]; });
+                           if (a.foto !== undefined) o.foto = a.foto || null; if (a.desc !== undefined) o.descripcion = a.desc; return o; };
+
+  /* ---- Carga de datos ---- */
+  const CARGAS = {
+    alumnos:    async () => { C.alumnos = (await api('alumnos')).map(deAlumno); },
+    pcs:        async () => { C.pcs = await api('computadoras'); },
+    prestamos:  async () => { C.prestamos = (await api('prestamos')).map(dePrestamo).reverse(); }, // la API los manda del más nuevo al más viejo; acá quedan del más viejo al más nuevo
+    log:        async () => { C.log = await api('actividad'); }
   };
-  const get = Almacen.leer, set = Almacen.escribir;
-
-  /* ---- Datos iniciales (solo la primera vez) ---- */
-  if (!Almacen.existe(K.pcs)) set(K.pcs, [
-    { id:'HP-01',  nombre:'Hp 01',              marca:'HP',            modelo:'ProBook 450 G8',   ram:'8 GB',  almacenamiento:'256 GB SSD', estado:'Disponible' },
-    { id:'LEN-06', nombre:'Lenovo 06',          marca:'Lenovo',        modelo:'ThinkPad E14',     ram:'8 GB',  almacenamiento:'512 GB SSD', estado:'Disponible' },
-    { id:'JM-18',  nombre:'Juana Manso 18',     marca:'Juana Manso',   modelo:'Netbook JM-2021',  ram:'4 GB',  almacenamiento:'128 GB SSD', estado:'Disponible' },
-    { id:'CI-08',  nombre:'Conectar Igualdad 08', marca:'Conectar Igualdad', modelo:'Positivo BGH',  ram:'4 GB',  almacenamiento:'320 GB HDD', estado:'Prestada' },
-    { id:'HP-02',  nombre:'Hp 02',              marca:'HP',            modelo:'250 G7',           ram:'4 GB',  almacenamiento:'500 GB HDD', estado:'En reparación' }
-  ]);
-  if (!Almacen.existe(K.alumnos)) set(K.alumnos, [
-    { dni:'49096596', nombre:'Yago',   apellido:'Calle',     email:'yago@ejemplo.com',   telefono:'3825671774', anio:'6°', division:'1° Div', estado:'Activo', foto:'', desc:'' },
-    { dni:'45123456', nombre:'Lucía',  apellido:'Fernández', email:'lucia@ejemplo.com',  telefono:'3825400111', anio:'5°', division:'2° Div', estado:'Activo', foto:'', desc:'' },
-    { dni:'46234567', nombre:'Mateo',  apellido:'Ramírez',   email:'mateo@ejemplo.com',  telefono:'3825400222', anio:'4°', division:'1° Div', estado:'Activo', foto:'', desc:'' }
-  ]);
-  /* Migración de datos guardados con la versión anterior: se agrega el correo y las divisiones A/B pasan a 1° Div / 2° Div */
-  (() => {
-    const l = get(K.alumnos, []), m = { A:'1° Div', B:'2° Div' }; let c = false;
-    l.forEach(a => {
-      if (a.email === undefined) { a.email = ''; c = true; }
-      if (m[a.division]) { a.division = m[a.division]; c = true; }
-      if (a.dni === '49096596' && a.apellido === 'Cll') { a.apellido = 'Calle'; c = true; } // corrige el apellido de la versión anterior
-    });
-    if (c) set(K.alumnos, l);
-  })();
-  if (!Almacen.existe(K.prestamos)) set(K.prestamos, [
-    { id:'P-1', pcId:'CI-08', dni:'46234567', fecha:new Date().toISOString(), devuelto:null }
-  ]);
-  if (!Almacen.existe(K.log)) set(K.log, []);
-  Almacen.borrar('prestamo_activo'); // clave de la versión anterior
+  const cargar = (...cuales) => Promise.all((cuales.length ? cuales : Object.keys(CARGAS)).map(k => CARGAS[k]()));
 
   /* ---- Utilidades ---- */
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -52,55 +40,62 @@ const SPE = (() => {
     const m = { 'Disponible':'ok', 'Activo':'ok', 'Prestada':'bad', 'En reparación':'warn', 'Inactivo':'warn', 'Suspendido':'bad' };
     return `<span class="chip chip-${m[estado] || 'info'}">${esc(estado)}</span>`;
   };
+  const norm = t => String(t ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
   /* ---- Sesión ---- */
-  const sesion = () => get(K.sesion, null);
-  const setSesion = s => set(K.sesion, s);
-  const cerrarSesion = () => { Almacen.borrar(K.sesion); location.href = 'index.html'; };
+  const sesion = () => { try { return JSON.parse(localStorage.getItem(K_SESION)); } catch (e) { return null; } };
+  const setSesion = s => localStorage.setItem(K_SESION, JSON.stringify(s));
+  const cerrarSesion = () => { localStorage.removeItem(K_SESION); location.href = 'index.html'; };
   const requerir = rol => { const s = sesion(); if (!s || s.rol !== rol) { location.replace('index.html'); return null; } return s; };
+  const login = (usuario, clave, rol) => api('login', 'POST', { usuario, clave, rol });
+  const estadisticas = () => api('estadisticas');
 
-  /* ---- Tablas ---- */
-  const alumnos = () => get(K.alumnos, []);
-  const guardarAlumnos = v => set(K.alumnos, v);
-  const alumno = dni => alumnos().find(a => a.dni === dni);
-  /* Normaliza texto para comparar: sin tildes, sin mayúsculas y sin espacios repetidos ("  yago   CALLE " → "yago calle") */
-  const norm = t => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
-  /* Usuario = "Nombre Apellido" (o el DNI) · Contraseña = DNI */
-  const buscarLogin = (usuario, clave) => { const u = norm(usuario); return alumnos().find(a => a.dni === String(clave).trim() && (norm(nombreCompleto(a)) === u || a.dni === u)); };
+  /* ---- Lectura (sobre la copia en memoria) ---- */
+  const alumnos = () => C.alumnos;
+  const alumno = dni => C.alumnos.find(a => a.dni === dni);
   const nombreCompleto = a => a ? `${a.nombre} ${a.apellido}` : 'Desconocido';
   const curso = a => !a ? '—' : (a.anio === 'Profesor' ? 'Profesor' : `${a.anio} año · ${a.division}`);
-  const pcs = () => get(K.pcs, []);
-  const guardarPcs = v => set(K.pcs, v);
-  const pc = id => pcs().find(p => p.id === id);
-  const prestamos = () => get(K.prestamos, []);
-  const guardarPrestamos = v => set(K.prestamos, v);
-  const activos = () => prestamos().filter(p => !p.devuelto);
+  const pcs = () => C.pcs;
+  const pc = id => C.pcs.find(p => p.id === id);
+  const prestamos = () => C.prestamos;
+  const activos = () => C.prestamos.filter(p => !p.devuelto);
   const prestamoDe = dni => activos().find(p => p.dni === dni);
+  const logs = () => C.log;
 
-  /* ---- Registro de actividad ---- */
-  const log = msg => { const l = get(K.log, []); l.unshift({ t:new Date().toISOString(), msg }); set(K.log, l.slice(0, 60)); };
-  const logs = () => get(K.log, []);
+  /* ---- Registro de actividad (no frena la acción si falla) ---- */
+  const log = msg => { C.log.unshift({ t:new Date().toISOString(), msg }); C.log = C.log.slice(0, 60); return api('actividad', 'POST', { msg }).catch(() => {}); };
 
-  /* ---- Acciones de préstamo ---- */
-  function pedir(pcId, dni) {
-    const a = alumno(dni), p = pc(pcId);
-    if (!a || !p) return { ok:false, msg:'No se encontró el usuario o el equipo.' };
-    if (a.estado !== 'Activo') return { ok:false, msg:`Tu estado es "${a.estado}". Consulta con el administrador.` };
-    if (prestamoDe(dni)) return { ok:false, msg:'Ya tienes un equipo en uso. Devuélvelo antes de pedir otro.' };
-    if (p.estado !== 'Disponible') return { ok:false, msg:`${p.nombre} no está disponible (${p.estado}).` };
-    const todos = pcs(); todos.find(x => x.id === pcId).estado = 'Prestada'; guardarPcs(todos);
-    const ps = prestamos(); ps.push({ id:'P-' + Date.now(), pcId, dni, fecha:new Date().toISOString(), devuelto:null }); guardarPrestamos(ps);
-    log(`${nombreCompleto(a)} pidió ${p.nombre}`);
-    return { ok:true, msg:`Reserva registrada para ${p.nombre}.` };
+  /* ---- Alumnos ---- */
+  async function crearAlumno(a) { await api('alumnos', 'POST', aAlumnoDB(a)); await cargar('alumnos'); }
+  async function editarAlumno(dniOriginal, cambios) { await api('alumnos?dni=' + q(dniOriginal), 'PUT', aAlumnoDB(cambios)); await cargar('alumnos', 'prestamos'); }
+  async function eliminarAlumno(dni) {
+    const pr = prestamoDe(dni); if (pr) await devolver(pr.id, true);
+    await api('alumnos?dni=' + q(dni), 'DELETE'); await cargar('alumnos', 'prestamos', 'pcs');
   }
-  function devolver(prestamoId, porAdmin = false) {
-    const ps = prestamos(), pr = ps.find(x => x.id === prestamoId && !x.devuelto);
-    if (!pr) return { ok:false, msg:'No hay un préstamo activo.' };
-    pr.devuelto = new Date().toISOString(); guardarPrestamos(ps);
-    const todos = pcs(), p = todos.find(x => x.id === pr.pcId);
-    if (p) { if (p.estado === 'Prestada') p.estado = 'Disponible'; guardarPcs(todos); }
-    log(`${p ? p.nombre : pr.pcId} devuelta por ${nombreCompleto(alumno(pr.dni))}${porAdmin ? ' (confirmado por admin)' : ''}`);
-    return { ok:true, msg:'El equipo fue reincorporado al stock.' };
+  /* ---- Computadoras ---- */
+  async function crearPc(p) { await api('computadoras', 'POST', p); await cargar('pcs'); }
+  async function editarPc(id, cambios) { await api('computadoras?id=' + q(id), 'PUT', cambios); await cargar('pcs'); }
+  async function eliminarPc(id) { await api('computadoras?id=' + q(id), 'DELETE'); await cargar('pcs', 'prestamos'); }
+
+  /* ---- Acciones de préstamo (devuelven { ok, msg } como antes) ---- */
+  async function pedir(pcId, dni) {
+    try {
+      await cargar('alumnos', 'pcs', 'prestamos');                       // valida con los datos más nuevos
+      const a = alumno(dni), p = pc(pcId);
+      await api('prestamos', 'POST', { pc_id:pcId, dni });               // el servidor vuelve a validar todo
+      log(`${nombreCompleto(a)} pidió ${p ? p.nombre : pcId}`);
+      await cargar('pcs', 'prestamos');
+      return { ok:true, msg:`Reserva registrada para ${p ? p.nombre : 'el equipo'}.` };
+    } catch (e) { return { ok:false, msg:e.message }; }
+  }
+  async function devolver(prestamoId, porAdmin = false) {
+    try {
+      const pr = C.prestamos.find(x => String(x.id) === String(prestamoId) && !x.devuelto), p = pr && pc(pr.pcId), a = pr && alumno(pr.dni);
+      await api('prestamos?id=' + q(prestamoId), 'PUT');
+      log(`${p ? p.nombre : (pr ? pr.pcId : 'Equipo')} devuelta por ${nombreCompleto(a)}${porAdmin ? ' (confirmado por admin)' : ''}`);
+      await cargar('pcs', 'prestamos');
+      return { ok:true, msg:'El equipo fue reincorporado al stock.' };
+    } catch (e) { return { ok:false, msg:e.message }; }
   }
 
   /* ---- Avisos y confirmación (reemplazan alert/confirm) ---- */
@@ -126,6 +121,7 @@ const SPE = (() => {
     const r = t.getBoundingClientRect(); t.style.setProperty('--mx', (e.clientX - r.left) + 'px'); t.style.setProperty('--my', (e.clientY - r.top) + 'px');
   });
 
-  return { norm, buscarLogin, sesion, setSesion, cerrarSesion, requerir, alumnos, guardarAlumnos, alumno, nombreCompleto, curso, pcs, guardarPcs, pc,
-           prestamos, guardarPrestamos, activos, prestamoDe, pedir, devolver, log, logs, toast, confirmar, esc, fmtFecha, chip };
+  return { cargar, login, estadisticas, norm, sesion, setSesion, cerrarSesion, requerir, alumnos, alumno, nombreCompleto, curso, pcs, pc,
+           prestamos, activos, prestamoDe, crearAlumno, editarAlumno, eliminarAlumno, crearPc, editarPc, eliminarPc, pedir, devolver,
+           log, logs, toast, confirmar, esc, fmtFecha, chip };
 })();

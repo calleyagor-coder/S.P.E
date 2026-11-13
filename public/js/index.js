@@ -1,9 +1,6 @@
 let rolSeleccionado;
 const $ = id => document.getElementById(id);
 
-/* Administrador: se identifica por nombre y apellido + DNI */
-const ADMIN = { nombre:'Yago Calle', dni:'49096596' };
-
 const ROLES = {
   estudiante: { ico:'🎓', titulo:'Acceso estudiante / profesor', sub:'Ingresa con tu nombre y apellido para pedir o devolver una computadora.',
                 placeholder:'Nombre y apellido (o DNI)' },
@@ -39,20 +36,21 @@ function entrar(sesion, destino) {
   SPE.setSesion(sesion);
   setTimeout(() => { location.href = destino; }, 450);
 }
-function iniciandoSesion() {
+let ingresando = false;
+async function iniciandoSesion() {
+  if (ingresando) return;
   const user = $('usuario').value.trim(), pass = $('contraseña').value.trim();
   if (!user || !pass) return falla('Completa usuario y contraseña.');
-
-  if (rolSeleccionado === 'admin') {
-    if (SPE.norm(user) === SPE.norm(ADMIN.nombre) && pass === ADMIN.dni)
-      return entrar({ usuario:ADMIN.nombre, nombre:'Administrador', rol:'admin' }, 'panel-admin.html');
-    return falla('Usuario o contraseña incorrectos.');
+  ingresando = true;
+  const b = $('btn-ingresar'), txt = b.textContent; b.disabled = true; b.textContent = 'Verificando…';
+  try {
+    // La contraseña se valida en el servidor (api/login.js): el navegador no descarga ningún dato de otros usuarios
+    const ses = await SPE.login(user, pass, rolSeleccionado);
+    entrar(ses, ses.rol === 'admin' ? 'panel-admin.html' : 'menu.html');
+  } catch (e) {
+    ingresando = false; b.disabled = false; b.textContent = txt;
+    falla(e.message);
   }
-  // Estudiante / profesor: usuario = "Nombre Apellido" registrado (o su DNI), contraseña = DNI
-  const a = SPE.buscarLogin(user, pass);
-  if (!a) return falla('Usuario o contraseña incorrectos.');
-  if (a.estado !== 'Activo') return falla(`Tu cuenta figura como "${a.estado}". Consulta con el administrador.`);
-  entrar({ usuario:SPE.nombreCompleto(a), nombre:SPE.nombreCompleto(a), dni:a.dni, rol:'estudiante' }, 'menu.html');
 }
 ['usuario', 'contraseña'].forEach(id => $(id).addEventListener('input', () => { $('error-login').textContent = ''; }));
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && !$('seccion-login').classList.contains('hidden')) iniciandoSesion(); });
@@ -75,9 +73,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && !$('seccion
 })();
 
 /* Contadores animados con datos reales del sistema */
-(() => {
-  const pcs = SPE.pcs();
-  const metas = { 'st-disp': pcs.filter(p => p.estado === 'Disponible').length, 'st-pcs': pcs.length, 'st-alu': SPE.alumnos().filter(a => a.estado === 'Activo').length };
+SPE.estadisticas().then(e => {
+  const metas = { 'st-disp': e.disponibles, 'st-pcs': e.computadoras, 'st-alu': e.activos };
   Object.entries(metas).forEach(([id, meta]) => {
     const el = $(id), ini = performance.now(), dur = 1300;
     (function tick(ahora) {
@@ -86,7 +83,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && !$('seccion
       if (p < 1) requestAnimationFrame(tick);
     })(ini);
   });
-})();
+}).catch(() => {}); // si la API no responde, los contadores quedan en 0
 
 /* Las tarjetas flotantes se mueven suavemente con el mouse */
 document.addEventListener('mousemove', e => {

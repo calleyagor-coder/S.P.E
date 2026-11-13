@@ -19,7 +19,18 @@ HTML5 · CSS3 · JavaScript (Fetch API) · Node.js (funciones serverless) · Sup
 
 ## Variables de entorno
 Copiar `.env.example` como `.env` y completar `SUPABASE_URL` y `SUPABASE_ANON_KEY`.
-En Vercel se cargan en *Settings → Environment Variables*.
+En Vercel se cargan en *Settings → Environment Variables* (nunca se suben a GitHub).
+Opcionales: `SUPABASE_SECRET_KEY` (clave secreta, solo servidor), `ADMIN_USUARIO` y `ADMIN_CLAVE`.
+
+## Endpoints de la API
+| Ruta | Métodos | Uso |
+|---|---|---|
+| `/api/alumnos` (`?dni=`) | GET · POST · PUT · DELETE | CRUD de alumnos |
+| `/api/computadoras` (`?id=`) | GET · POST · PUT · DELETE | CRUD de computadoras |
+| `/api/prestamos` (`?id=`) | GET · POST · PUT | pedir y devolver equipos |
+| `/api/actividad` | GET · POST | registro de movimientos |
+| `/api/login` | POST | valida usuario y contraseña en el servidor |
+| `/api/estadisticas` | GET | contadores de la pantalla de inicio |
 
 ## Base de datos
-Ejecutar `database/supabase.sql` en el *SQL Editor* de Supabase.
+Ejecutar `database/supabase.sql` en el *SQL Editor* de Supabase. Si ya lo habías ejecutado antes, ejecutar solo `database/actividad.sql`.
