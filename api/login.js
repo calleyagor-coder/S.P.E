@@ -5,8 +5,8 @@ import { supabase, configurado, faltanVariables } from './config.js';
 const norm = t => String(t ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 // El administrador se puede cambiar con variables de entorno en Vercel (ADMIN_USUARIO / ADMIN_CLAVE)
-const ADMIN_USUARIO = process.env.ADMIN_USUARIO || 'Yago Calle';
-const ADMIN_CLAVE = process.env.ADMIN_CLAVE || '49096596';
+const ADMIN_USUARIO = process.env.ADMIN_USUARIO || 'Admin';
+const ADMIN_CLAVE = process.env.ADMIN_CLAVE || '12345678';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Método no permitido.' }); }
