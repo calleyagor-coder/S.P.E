@@ -47,18 +47,16 @@ create policy "acceso prestamos" on prestamos for all using (true);
 
 -- Datos de ejemplo
 insert into alumnos (dni, nombre, apellido, email, telefono, anio, division, estado) values
- ('49096596', 'Yago',  'Calle',     'yago@ejemplo.com',  '3825671774', '6°', '1° Div', 'Activo'),
- ('45123456', 'Lucía', 'Fernández', 'lucia@ejemplo.com', '3825400111', '5°', '2° Div', 'Activo'),
- ('46234567', 'Mateo', 'Ramírez',   'mateo@ejemplo.com', '3825400222', '4°', '1° Div', 'Activo');
+ ('49000000', 'Yago',  'Calle',     'yago@ejemplo.com',  '3825000000', '5°', '2° Div', 'Activo');
 
 insert into computadoras (id, nombre, marca, modelo, ram, almacenamiento, estado) values
  ('HP-01',  'Hp 01',                'HP',                'ProBook 450 G8',  '8 GB', '256 GB SSD', 'Disponible'),
  ('LEN-06', 'Lenovo 06',            'Lenovo',            'ThinkPad E14',    '8 GB', '512 GB SSD', 'Disponible'),
- ('JM-18',  'Juana Manso 18',       'Juana Manso',       'Netbook JM-2021', '4 GB', '128 GB SSD', 'Disponible'),
- ('CI-08',  'Conectar Igualdad 08', 'Conectar Igualdad', 'Positivo BGH',    '4 GB', '320 GB HDD', 'Prestada'),
- ('HP-02',  'Hp 02',                'HP',                '250 G7',          '4 GB', '500 GB HDD', 'En reparación');
+ ('JM-18',  'Juana Manso 18',       'Juana Manso',       'Netbook JM-2021', '8 GB', '128 GB SSD', 'Disponible'),
+ ('CI-08',  'Conectar Igualdad 08', 'Conectar Igualdad', 'Positivo BGH',    '8 GB', '128 GB HDD', 'Disponible'),
+ ('HP-02',  'Hp 02',                'HP',                '250 G7',          '8 GB', '512 GB HDD', 'En reparación');
 
-insert into prestamos (pc_id, dni) values ('CI-08', '46234567');
+insert into prestamos (pc_id, dni) values ('CI-08', '49000000');
 
 -- Registro de actividad
 create table if not exists actividad (
